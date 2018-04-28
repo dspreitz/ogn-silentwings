@@ -67,8 +67,6 @@ def get_strepla_contest_body(competition_id):
                           'contestant_number': contestant_row['glider_cid'],
                           'handicap': contestant_row['glider_index'],
                           'live_track_id': contestant_row['flarm_ID']}
-            contestant = Contestant(**parameters)
-            contestant.contest_class = contest_class
 
             # Do some checks of the live_track_id
             if parameters['live_track_id']:
@@ -86,10 +84,17 @@ def get_strepla_contest_body(competition_id):
                 if contestant_row['glider_callsign'] in ddb_entries.values():
                     live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(contestant_row['glider_callsign'])]
                     print(parameters['aircraft_registration'], "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
-                    parameters = {'live_track_id': live_track_id}
+                    id_parameters = {'live_track_id': live_track_id}
                 else:
                     print(parameters['aircraft_registration'], "Aircraft registration not found in OGN DDB.")
+                    id_parameters = {'live_track_id': 'XXXXXX'}
 
+                parameters.update(id_parameters)
+
+            contestant = Contestant(**parameters)
+            contestant.contest_class = contest_class
+            
+            
             parameters = {'first_name': contestant_row['name'].rsplit(',', 1)[0],
                           'last_name': contestant_row['name'].split(',', 1)[0],
                           'nationality': contestant_row['country']}
