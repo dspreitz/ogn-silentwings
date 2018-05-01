@@ -123,7 +123,7 @@ def glidertracker_filter(contest):
 
     print("Generating a filter list for glidertracker.org")
     # glidertracker_filter(contest)
-    gist_writer(gist_id=app.config['GIST_ID'], gist_task=None, gist_filter=glidertracker_filter(contest), gist_comment=glidertracker_contests())
+    gist_writer(gist_id=app.config['GIST_ID'], gist_content_task=None, gist_content_filter=glidertracker_filter(contest), gist_comment=glidertracker_contests())
 
 
 @app.cli.command()
@@ -160,7 +160,7 @@ def glidertracker_task(tid):
     write_xcsoar_task(fp, tasks[int(tid)])
     xml = fp.getvalue()
     print(xml.decode('utf-8'))
-    gist_writer(gist_id=app.config['GIST_ID'], gist_task=xml.decode('utf-8'), gist_filter=None, gist_comment=glidertracker_contests())
+    gist_writer(gist_id=app.config['GIST_ID'], gist_content_task=xml.decode('utf-8'), gist_content_filter=None, gist_comment=glidertracker_contests())
     # gist_writer(gist_id = None, gist_task=xml.decode('utf-8'), gist_filter = None)
 
 

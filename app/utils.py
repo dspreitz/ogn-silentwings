@@ -74,29 +74,29 @@ def logfile_to_beacons(logfile, reference_date=date(2015, 1, 1)):
     return beacons
 
 
-def gist_writer(gist_id=None, gist_filter=None, gist_task=None, gist_comment=None):
+def gist_writer(gist_id=None, gist_content_filter=None, gist_content_task=None, gist_comment=None):
     from github3 import login
     from flasky import app
 
-    if (gist_filter is None) and (gist_task is None):
-        raise ValueError("Please provide gist_filter or gist_task to gist_writer. Aborting.")
+    if (gist_content_filter is None) and (gist_content_task is None):
+        raise ValueError("Please provide gist_content_filter or gist_content_task to gist_writer. Aborting.")
 
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
 
     files = {}
-    if gist_filter:
+    if gist_content_filter:
         files_filter = {
             'filter': {
-                'content': gist_filter
+                'content': gist_content_filter
             }
         }
         files.update(files_filter)
 
-    if gist_task:
+    if gist_content_task:
         files_task = {
             'task': {
-                'content': gist_task
+                'content': gist_content_task
             }
         }
         files.update(files_task)
@@ -121,10 +121,10 @@ def gist_writer(gist_id=None, gist_filter=None, gist_task=None, gist_comment=Non
         # Edit the gist
         gist.edit(gist_comment, files)
 
-    if gist_filter:
+    if gist_content_filter:
         print("You Gist address is:  https://gist.github.com/{}/{}/raw/filter".format(gist.owner, gist.id))
 
-    if gist_task:
+    if gist_content_task:
         print("You Gist address is:  https://gist.github.com/{}/{}/raw/task".format(gist.owner, gist.id))
 
     return gist.html_url
