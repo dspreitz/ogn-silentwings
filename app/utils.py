@@ -2,6 +2,8 @@ from datetime import date
 import requests
 import csv
 from io import StringIO
+from app.model.contest_class import ContestClass
+from app import db
 
 
 # Imports OGN DDB into dict
@@ -74,16 +76,26 @@ def logfile_to_beacons(logfile, reference_date=date(2015, 1, 1)):
     return beacons
 
 
-def gist_writer(gist_id=None, gist_content_filter=None, gist_content_task=None, gist_comment=None):
+# def gist_writer(gist_content_filter=None, task=None):
+def gist_writer(task=None):
     from github3 import login
     from flasky import app
 
-    if (gist_content_filter is None) and (gist_content_task is None):
-        raise ValueError("Please provide gist_content_filter or gist_content_task to gist_writer. Aborting.")
+    # if (gist_content_filter is None) and (task is None):
+    #     raise ValueError("Please provide gist_content_filter or gist_content_task to gist_writer. Aborting.")
 
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
-
+    
+    # Get Gist-ID from config
+    gist_id = app.config['GIST_ID']
+    
+    gist_content_filter = task.contest_class.gt_filter()
+    
+    # Generate the gist comment
+    # short_name = contest.name.replace(" ", "").upper() + "_" + contest_class.type.replace("_", "").replace("-", "").upper()
+    gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.type.replace("_", "").replace("-", "").upper()
+    
     files = {}
     if gist_content_filter:
         files_filter = {
@@ -93,10 +105,10 @@ def gist_writer(gist_id=None, gist_content_filter=None, gist_content_task=None, 
         }
         files.update(files_filter)
 
-    if gist_content_task:
+    if task:
         files_task = {
             'task': {
-                'content': gist_content_task
+                'content': task.to_xml()
             }
         }
         files.update(files_task)
@@ -122,9 +134,18 @@ def gist_writer(gist_id=None, gist_content_filter=None, gist_content_task=None, 
         gist.edit(gist_comment, files)
 
     if gist_content_filter:
-        print("You Gist address is:  https://gist.github.com/{}/{}/raw/filter".format(gist.owner, gist.id))
+        contestants_filter_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/filter"
+        print("You Gist address is:  {}".format(contestants_filter_gist_url))
+        # Update DB with gist content filter URL: active_task_gist_url
+        # task.contest_class.contestants_filter_gist_url = contestants_filter_gist_url - not working as task is not known
 
-    if gist_content_task:
-        print("You Gist address is:  https://gist.github.com/{}/{}/raw/task".format(gist.owner, gist.id))
+    if task:
+        active_task_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/task"
+        print("You Gist address is:  {}".format(active_task_gist_url))
+        # Update DB with gist content filter URL: active_task_gist_url
+        task.contest_class.active_task_gist_url = active_task_gist_url
+
+    db.session.commit()
+
 
     return gist.html_url

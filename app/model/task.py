@@ -1,7 +1,8 @@
 from sqlalchemy import Column, String, Integer, Float, DateTime, Date, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app import db
-
+import io
+from app.xcsoar import write_xcsoar_task
 
 class Task(db.Model):
     __tablename__ = "tasks"
@@ -24,6 +25,13 @@ class Task(db.Model):
     # Relations
     contest_class_id = Column(Integer, ForeignKey('contest_classes.id', ondelete='SET NULL'))
     contest_class = relationship('ContestClass', foreign_keys=[contest_class_id], backref='tasks')
+
+    def to_xml(self):
+        fp = io.BytesIO()
+        write_xcsoar_task(fp, self)
+        xml = fp.getvalue()
+        return xml.decode('utf-8')
+
 
     def __repr__(self):
         return "<Task %s: %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s>" % (

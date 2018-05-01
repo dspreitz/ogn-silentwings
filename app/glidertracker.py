@@ -23,6 +23,9 @@ def glidertracker_filter(contest_name_with_class_type):
                 # print("This is our contest: " + contest_name)
                 # print("This is our class: " + contest_class_type)
 
+                
+                contest_class.gt_filter()
+                """
                 for contestant in contest_class.contestants:
                     parameters = {'live_track_id': contestant.live_track_id,
                                   'aircraft_registration': contestant.aircraft_registration,
@@ -31,6 +34,7 @@ def glidertracker_filter(contest_name_with_class_type):
 
                     entry = '"{live_track_id}","{aircraft_registration}","{contestant_number}","{aircraft_model}"'.format(**parameters)
                     result_list.append(entry)
+                """
 
     print("\n".join(result_list).replace('"', ""))
     return "\n".join(result_list)

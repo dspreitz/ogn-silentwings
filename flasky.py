@@ -123,17 +123,15 @@ def glidertracker_filter(contest):
 
     print("Generating a filter list for glidertracker.org")
     # glidertracker_filter(contest)
-    gist_writer(gist_id=app.config['GIST_ID'], gist_content_task=None, gist_content_filter=glidertracker_filter(contest), gist_comment=glidertracker_contests())
+    # gist_writer(task=tasks[int(7)] , gist_content_filter=glidertracker_filter(contest))
 
 
 @app.cli.command()
 @click.option('--tID', help='ID of Task from DB')
 def glidertracker_task(tid):
     """Writes a task in glidertracker format"""
-    from app.xcsoar import write_xcsoar_task
     from app.glidertracker import glidertracker_contests
-    import io
-
+    
     if tid is None:
         print("You must specify the contest ID with option '--tID'")
         print("Following contests are known:")
@@ -153,15 +151,8 @@ def glidertracker_task(tid):
         print("The task ID you provided is too high. Aborting.")
         return
 
-    # short_name = contest.name.replace(" ", "").upper() + "_" + contest_class.type.replace("_", "").replace("-", "").upper()
-    # print(short_name)
-
-    fp = io.BytesIO()
-    write_xcsoar_task(fp, tasks[int(tid)])
-    xml = fp.getvalue()
-    print(xml.decode('utf-8'))
-    gist_writer(gist_id=app.config['GIST_ID'], gist_content_task=xml.decode('utf-8'), gist_content_filter=None, gist_comment=glidertracker_contests())
-    # gist_writer(gist_id = None, gist_task=xml.decode('utf-8'), gist_filter = None)
+    # gist_writer(task=tasks[int(tid)], gist_content_filter=None)
+    gist_writer(task=tasks[int(tid)])
 
 
 #########################
