@@ -5,7 +5,7 @@ from app import db
 # This function generates the filter contents
 def glidertracker_filter(contest_name_with_class_type):
     # ===============================================
-    # This file write a filter list for glidertracker
+    # This file write a filter list for glidertracker.org:
     # ID,CALL,CN,TYPE
     # 06DDABCD,D-ABCD,CD,DuoDiscus
     # ==============================================

@@ -9,6 +9,8 @@ class ContestClass(db.Model):
     id = Column(Integer, primary_key=True)
     category = Column(String)
     type = Column(String)
+    # active_task_gist_url = Column(String)
+    # contestants_filter_gist_url = Column(String)
 
     # Relations
     contest_id = Column(Integer, ForeignKey('contests.id', ondelete='SET NULL'))
@@ -18,4 +20,7 @@ class ContestClass(db.Model):
         return "<ContestClass %s: %s,%s>" % (
             self.id,
             self.category,
-            self.type)
+            self.type   # ,
+            # self.active_task_gist_url,
+            # self.contestants_filter_gist_url
+        )

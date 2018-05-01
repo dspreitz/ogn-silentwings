@@ -93,8 +93,7 @@ def get_strepla_contest_body(competition_id):
 
             contestant = Contestant(**parameters)
             contestant.contest_class = contest_class
-            
-            
+
             parameters = {'first_name': contestant_row['name'].rsplit(',', 1)[0],
                           'last_name': contestant_row['name'].split(',', 1)[0],
                           'nationality': contestant_row['country']}

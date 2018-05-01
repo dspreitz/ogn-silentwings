@@ -72,3 +72,59 @@ def logfile_to_beacons(logfile, reference_date=date(2015, 1, 1)):
 
     fin.close()
     return beacons
+
+
+def gist_writer(gist_id=None, gist_filter=None, gist_task=None, gist_comment=None):
+    from github3 import login
+    from flasky import app
+
+    if (gist_filter is None) and (gist_task is None):
+        raise ValueError("Please provide gist_filter or gist_task to gist_writer. Aborting.")
+
+    # Provide login to Github via API token
+    gh = login(token=app.config['API_TOKEN'])
+
+    files = {}
+    if gist_filter:
+        files_filter = {
+            'filter': {
+                'content': gist_filter
+            }
+        }
+        files.update(files_filter)
+
+    if gist_task:
+        files_task = {
+            'task': {
+                'content': gist_task
+            }
+        }
+        files.update(files_task)
+
+    if gist_id is None:
+        # No Gist-ID provided, creating a new gist
+        print('No Gist-ID provided, creating a new Gist.')
+        gist = gh.create_gist(gist_comment, files, public=True)
+
+    else:
+        print("Gist-ID provided, modifying an existing gist.")
+        # Get all gits ID of authenticated github user to check if gist ID is valid
+        gists = [g.id for g in gh.gists()]
+        if gist_id in gists:
+            print("The GIST-ID you provided is valid.")
+            gist = gh.gist(gist_id)
+
+        else:
+            # Gist-ID is not valid
+            raise ValueError("This gist_id is not valid: '{}' Aborting.".format(gist_id))
+
+        # Edit the gist
+        gist.edit(gist_comment, files)
+
+    if gist_filter:
+        print("You Gist address is:  https://gist.github.com/{}/{}/raw/filter".format(gist.owner, gist.id))
+
+    if gist_task:
+        print("You Gist address is:  https://gist.github.com/{}/{}/raw/task".format(gist.owner, gist.id))
+
+    return gist.html_url

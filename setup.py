@@ -42,6 +42,7 @@ setup(
         'hal-codec==1.0.2',
         'ogn-client==0.8.2',
         'aerofiles==0.4.1',
+        'github3==0.9.3',
     ],
     extras_require={
         'dev': [

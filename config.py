@@ -7,6 +7,12 @@ class Config:
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Github Username
+    # GIT_USERNAME = os.environ.get('GIT_USERNAME') or 'hard to guess string'
+    API_TOKEN = os.environ.get('GIT_API_TOKEN') or None
+    GIST_ID = os.environ.get('GIST_ID') or None
+    # GIT_PASSWORD = os.environ.get('GIT_PASSWORD') or 'hard to guess string'
+
     @staticmethod
     def init_app(app):
         pass
@@ -39,6 +45,7 @@ class ProductionConfig(Config):
     SOARINGSPOT_CLIENT_ID = '2470_A!6LMHu8oxdHC8CFU8lxW.LyykzdgZjGTTXeTwU3'
     SOARINGSPOT_SECRET = 'Tlfd3bDcmCV3AkNhZEygmTDXaLYH6APLvDokwjj9RilSvrkCFmLhxi331TPsrUH0'
     SOARINGSPOT_BASE_URL = 'http://api.soaringspot.com/v1/'
+
 
 config = {
     'development': DevelopmentConfig,

@@ -7,8 +7,7 @@ from flask import request
 from app.silent_wings import create_active_contests_string, create_contest_info_string, create_cuc
 from app.soaringspot import get_soaringspot_contests
 from app.strepla import list_strepla_contests
-#from app.routes import gencuc
-from app.utils import logfile_to_beacons
+from app.utils import logfile_to_beacons, gist_writer
 from datetime import date
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -47,7 +46,7 @@ def import_soaringspot():
 
 
 @app.cli.command()
-@click.option('--logfile',  help='path of the logfile')
+@click.option('--logfile', help='path of the logfile')
 def import_logfile(logfile):
     """Import an OGN APRS stream logfile."""
     if logfile is None:
@@ -83,7 +82,7 @@ def strepla_contests():
 
 
 @app.cli.command()
-@click.option('--cID',  help='ID of Contest')
+@click.option('--cID', help='ID of Contest')
 def import_strepla(cid):
     """Import a StrePla contest from scoring*StrePla"""
     from app.strepla import get_strepla_contest_all
@@ -110,21 +109,21 @@ def list_contests_tasks():
     return
 
 
-
 @app.cli.command()
-@click.option('--contest',  help='Name of Contest')
+@click.option('--contest', help='Name of Contest')
 def glidertracker_filter(contest):
     """Generate a filter list for glidertracker.org"""
     from app.glidertracker import glidertracker_filter, glidertracker_contests
     if contest is None:
         print("You must specify the name of the contest with option '--contest'")
         print("Following contests are known:")
-        # Output list of known contests 
+        # Output list of known contests
         print(glidertracker_contests())
         return
 
     print("Generating a filter list for glidertracker.org")
-    glidertracker_filter(contest)
+    # glidertracker_filter(contest)
+    gist_writer(gist_id=app.config['GIST_ID'], gist_task=None, gist_filter=glidertracker_filter(contest), gist_comment=glidertracker_contests())
 
 
 @app.cli.command()
@@ -132,7 +131,9 @@ def glidertracker_filter(contest):
 def glidertracker_task(tid):
     """Writes a task in glidertracker format"""
     from app.xcsoar import write_xcsoar_task
+    from app.glidertracker import glidertracker_contests
     import io
+
     if tid is None:
         print("You must specify the contest ID with option '--tID'")
         print("Following contests are known:")
@@ -143,21 +144,25 @@ def glidertracker_task(tid):
                 print(contest_class)
                 for task in contest_class.tasks:
                     print(task)
-        
+
         return
-    
+
     tid = int(tid) - 1
     tasks = db.session.query(Task)
     if int(tid) > (len(tasks.all()) - 1):
         print("The task ID you provided is too high. Aborting.")
         return
-    
+
+    # short_name = contest.name.replace(" ", "").upper() + "_" + contest_class.type.replace("_", "").replace("-", "").upper()
+    # print(short_name)
+
     fp = io.BytesIO()
     write_xcsoar_task(fp, tasks[int(tid)])
     xml = fp.getvalue()
     print(xml.decode('utf-8'))
-    
-    
+    gist_writer(gist_id=app.config['GIST_ID'], gist_task=xml.decode('utf-8'), gist_filter=None, gist_comment=glidertracker_contests())
+    # gist_writer(gist_id = None, gist_task=xml.decode('utf-8'), gist_filter = None)
+
 
 #########################
 # Following Sections provides the Silent Wings Viewer interface
@@ -171,9 +176,9 @@ def route_getactivecontests():
     # username=<user name>
     # cpassword=<encrypted password>
     # version=<version number>
-    username = request.args.get('username', type=str)
-    cpassword = request.args.get('cpassword', type=str)
-    version = request.args.get('version', type=str)
+    # username = request.args.get('username', type=str)
+    # cpassword = request.args.get('cpassword', type=str)
+    # version = request.args.get('version', type=str)
 
     # Example request by SWV:
     # GET /getactivecontests.php?username=ogn&cpassword=ecbad38d0b5a3cf6482e661028b2c60c&version=1.3 HTTP/1.1
@@ -197,15 +202,15 @@ def route_getcontestinfo():
     # cpassword=<encrypted password>
     # contestname=<contest name>
     # date=<YYYYMMDD>
-    username = request.args.get('username', type = str)
-    cpassword = request.args.get('cpassword', type = str)
-    contestname = request.args.get('contestname', type = str)
-    date = request.args.get('date', type = str)
+    # username = request.args.get('username', type=str)
+    # cpassword = request.args.get('cpassword', type=str)
+    contestname = request.args.get('contestname', type=str)
+    date = request.args.get('date', type=str)
 
     if 'date' in request.args:
         # return CUC file
         print("create_cuc was called")
-        return create_cuc(contestname,date)
+        return create_cuc(contestname, date)
     else:
         return create_contest_info_string(contestname)
 
@@ -221,14 +226,14 @@ def route_gettrackerdata():
     # starttime=<YYYYMMDDHHMMSS>
     # endtime=<YYYYMMDDHHMMSS>
     # compression=<none | gzip>
-    querytype = request.args.get('querytype', type = str)
-    contestname = request.args.get('contestname', type = str)
-    trackerid = request.args.get('trackerid', type = str)
-    username = request.args.get('username', type = str)
-    cpassword = request.args.get('cpassword', type = str)
-    starttime = request.args.get('starttime', type = str)
-    endtime = request.args.get('endtime', type = str)
-    compression = request.args.get('compression', type = str)
+    # querytype = request.args.get('querytype', type=str)
+    # contestname = request.args.get('contestname', type=str)
+    # trackerid = request.args.get('trackerid', type=str)
+    # username = request.args.get('username', type=str)
+    # cpassword = request.args.get('cpassword', type=str)
+    # starttime = request.args.get('starttime', type=str)
+    # endtime = request.args.get('endtime', type=str)
+    # compression = request.args.get('compression', type=str)
 
     # GET /gettrackerdata.php?querytype=getintfixes&contestname=SOARINGSPOT3DTRACKINGINTERFACE%5f18METER&trackerid=FLRDDE1FC&username=ogn&cpassword=ecbad38d0b5a3cf6482e661028b2c60c&starttime=20180303000001&endtime=20180303235959&compression=gzip HTTP/1.0
     print("gettrackerdata was called!")
@@ -238,15 +243,13 @@ def route_gettrackerdata():
 @app.route("/getprotocolinfo.php")
 def route_getprotocolinfo():
     from time import time
-    username = request.args.get('username', type = str)
-    cpassword = request.args.get('cpassword', type = str)
+    # username = request.args.get('username', type=str)
+    # cpassword = request.args.get('cpassword', type=str)
     # {version}1.3{/version}{date}20080811{/date}{time}1218457469{/time}
     return "{version}1.3{/version}{date}" + date.today().strftime("%Y%m%d") + "{/date}{time}" + str(int(time())) + "{/time}"
-
 
 
 #########################
 # Following Sections provides the Silent Wings Studio interface
 # For more details visit https://github.com/swingsopen/swtracking/wiki/Tracking-Protocol
 #########################
-
