@@ -3,12 +3,14 @@ from app import db
 
 
 # This function generates the filter contents
-def glidertracker_filter(contest_name_with_class_type):
+def glidertracker_filter(contest_class_nr):
     # ===============================================
     # This file write a filter list for glidertracker.org:
     # ID,CALL,CN,TYPE
     # 06DDABCD,D-ABCD,CD,DuoDiscus
     # ==============================================
+    
+    contest_name = contest_name_with_class_type.partition("_")[0]
     contest_name = contest_name_with_class_type.partition("_")[0]
     short_name = contest_name.replace(" ", "").upper()
     contest_class_type = contest_name_with_class_type.partition("_")[2]
@@ -47,6 +49,7 @@ def glidertracker_contests():
         for contest_class in contest.classes:
             short_name = contest.name.replace(" ", "").upper() + "_" + contest_class.type.replace("_", "").replace("-", "").upper()
             # long_name = contest.name + " " + contest_class.type
+            print("ID = {}: {} - Class: {}".format(contest_class.id, contest_class.contest.name, contest_class.type))
             result_string.append(short_name)
 
     return "\n".join(result_string)

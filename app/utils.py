@@ -77,12 +77,9 @@ def logfile_to_beacons(logfile, reference_date=date(2015, 1, 1)):
 
 
 # def gist_writer(gist_content_filter=None, task=None):
-def gist_writer(task=None):
+def gist_writer(task):
     from github3 import login
     from flasky import app
-
-    # if (gist_content_filter is None) and (task is None):
-    #     raise ValueError("Please provide gist_content_filter or gist_content_task to gist_writer. Aborting.")
 
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
@@ -93,7 +90,6 @@ def gist_writer(task=None):
     gist_content_filter = task.contest_class.gt_filter()
     
     # Generate the gist comment
-    # short_name = contest.name.replace(" ", "").upper() + "_" + contest_class.type.replace("_", "").replace("-", "").upper()
     gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.type.replace("_", "").replace("-", "").upper()
     
     files = {}

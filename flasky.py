@@ -1,6 +1,7 @@
 import os
 from app import create_app, db
-from app.model import Contest, ContestClass, Contestant, Pilot, Task, Beacon
+from app.model import Contest, ContestClass, Contestant, Pilot, Task, Beacon,\
+    contest_class
 from flask_migrate import Migrate, MigrateCommand
 import click
 from flask import request
@@ -110,18 +111,24 @@ def list_contests_tasks():
 
 
 @app.cli.command()
-@click.option('--contest', help='Name of Contest')
-def glidertracker_filter(contest):
+# @click.option('--contest', help='Name of Contest')
+@click.option('--ccID', help='ID of contest class')
+def glidertracker_filter(ccid):
     """Generate a filter list for glidertracker.org"""
     from app.glidertracker import glidertracker_filter, glidertracker_contests
+    contest_classes = db.session.query(ContestClass)
+    
+    contest = contest_classes[int(ccid)-1]
+    
     if contest is None:
-        print("You must specify the name of the contest with option '--contest'")
+        print("You must specify the ID of the contest class with option '--ccID'")
         print("Following contests are known:")
         # Output list of known contests
         print(glidertracker_contests())
         return
 
     print("Generating a filter list for glidertracker.org")
+    contest.gt_filter()
     # glidertracker_filter(contest)
     # gist_writer(task=tasks[int(7)] , gist_content_filter=glidertracker_filter(contest))
 
