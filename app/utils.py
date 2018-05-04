@@ -2,7 +2,6 @@ from datetime import date
 import requests
 import csv
 from io import StringIO
-from app.model.contest_class import ContestClass
 from app import db
 
 
@@ -83,31 +82,27 @@ def gist_writer(task):
 
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
-    
+
     # Get Gist-ID from config
     gist_id = app.config['GIST_ID']
-    
-    gist_content_filter = task.contest_class.gt_filter()
-    
+
     # Generate the gist comment
     gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.type.replace("_", "").replace("-", "").upper()
-    
-    files = {}
-    if gist_content_filter:
-        files_filter = {
-            'filter': {
-                'content': gist_content_filter
-            }
-        }
-        files.update(files_filter)
 
-    if task:
-        files_task = {
-            'task': {
-                'content': task.to_xml()
-            }
+    files = {}
+    files_filter = {
+        'filter': {
+            'content': task.contest_class.gt_filter()
         }
-        files.update(files_task)
+    }
+    files.update(files_filter)
+
+    files_task = {
+        'task': {
+            'content': task.to_xml()
+        }
+    }
+    files.update(files_task)
 
     if gist_id is None:
         # No Gist-ID provided, creating a new gist
@@ -129,19 +124,16 @@ def gist_writer(task):
         # Edit the gist
         gist.edit(gist_comment, files)
 
-    if gist_content_filter:
-        contestants_filter_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/filter"
-        print("You Gist address is:  {}".format(contestants_filter_gist_url))
-        # Update DB with gist content filter URL: active_task_gist_url
-        # task.contest_class.contestants_filter_gist_url = contestants_filter_gist_url - not working as task is not known
+    contestants_filter_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/filter"
+    print("You filter Gist address is:  {}".format(contestants_filter_gist_url))
+    # Update DB with gist content filter URL: active_task_gist_url
+    # task.contest_class.contestants_filter_gist_url = contestants_filter_gist_url - not working as task is not known
 
-    if task:
-        active_task_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/task"
-        print("You Gist address is:  {}".format(active_task_gist_url))
-        # Update DB with gist content filter URL: active_task_gist_url
-        task.contest_class.active_task_gist_url = active_task_gist_url
-
+    active_task_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/task"
+    print("You task Gist address is:  {}".format(active_task_gist_url))
+    print("Your glidertracker.org URL is:\nhttp://glidertracker.org/#tsk={}&lst={}".format(active_task_gist_url, contestants_filter_gist_url))
+    # Update DB with gist content filter URL: active_task_gist_url
+    task.contest_class.active_task_gist_url = active_task_gist_url
     db.session.commit()
-
 
     return gist.html_url

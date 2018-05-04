@@ -4,6 +4,7 @@ from app import db
 import io
 from app.xcsoar import write_xcsoar_task
 
+
 class Task(db.Model):
     __tablename__ = "tasks"
     # example: <Task 1: 2018-04-19 00:00:01,preliminary,False,2018-04-19,1737118.5,0.0,0.0,2,2,unknown_triangle,-1>
@@ -31,7 +32,6 @@ class Task(db.Model):
         write_xcsoar_task(fp, self)
         xml = fp.getvalue()
         return xml.decode('utf-8')
-
 
     def __repr__(self):
         return "<Task %s: %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s>" % (

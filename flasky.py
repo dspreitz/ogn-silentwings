@@ -10,6 +10,7 @@ from app.soaringspot import get_soaringspot_contests
 from app.strepla import list_strepla_contests
 from app.utils import logfile_to_beacons, gist_writer
 from datetime import date
+from app.glidertracker import glidertracker_contests
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
@@ -115,19 +116,23 @@ def list_contests_tasks():
 @click.option('--ccID', help='ID of contest class')
 def glidertracker_filter(ccid):
     """Generate a filter list for glidertracker.org"""
+
+    if ccid is None:
+        print("You must specify the contest class ID with option '--ccID'")
+        glidertracker_contests()
+        return
+
     contest_class_gt = db.session.query(ContestClass).filter(ContestClass.id == int(ccid)).one()
     print("Generating a filter list for glidertracker.org")
     print(contest_class_gt.gt_filter())
-    
     return
-    
+
 
 @app.cli.command()
 @click.option('--tID', help='ID of Task from DB')
 def glidertracker_task(tid):
     """Writes a task in glidertracker format"""
-    from app.glidertracker import glidertracker_contests
-    
+
     if tid is None:
         print("You must specify the contest ID with option '--tID'")
         print("Following contests are known:")

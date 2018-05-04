@@ -26,11 +26,10 @@ class ContestClass(db.Model):
                           'contestant_number': contestant.contestant_number,
                           'aircraft_model': contestant.aircraft_model}
 
-            entry = '"{live_track_id}","{aircraft_registration}","{contestant_number}","{aircraft_model}"'.format(**parameters)
+            entry = '"{live_track_id}","{aircraft_registration}","{contestant_number}","{aircraft_model}"'.format(**parameters).replace('"', "")
             result_list.append(entry)
 
         return "\n".join(result_list)
-
 
     def __repr__(self):
         return "<ContestClass %s: %s,%s,%s,%s>" % (
