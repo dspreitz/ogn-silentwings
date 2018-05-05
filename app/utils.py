@@ -5,18 +5,58 @@ from io import StringIO
 from app import db
 
 
+ddb_entries = None
+
+
 # Imports OGN DDB into dict
 def ddb_import():
-    ddb_url = "http://ddb.glidernet.org/download/"
-    r = requests.get(ddb_url)
-    rows = '\n'.join(i for i in r.text.splitlines() if i[0] != '#')
-    data = csv.reader(StringIO(rows), quotechar="'", quoting=csv.QUOTE_ALL)
+    global ddb_entries
+    if ddb_entries is None:
+        ddb_url = "http://ddb.glidernet.org/download/"
+        r = requests.get(ddb_url)
+        rows = '\n'.join(i for i in r.text.splitlines() if i[0] != '#')
+        data = csv.reader(StringIO(rows), quotechar="'", quoting=csv.QUOTE_ALL)
 
-    ddb_entries = dict()
-    for row in data:
-        ddb_entries[row[1]] = row[3]
+        ddb_entries = dict()
+        for row in data:
+            ddb_entries[row[1]] = row[3]
 
     return ddb_entries
+
+# Performs a lookup in ogn ddb
+def ogn_lookup(aircraft_registration):
+    ddb_import()
+    if aircraft_registration in ddb_entries.values():
+        live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(aircraft_registration)]
+        print(aircraft_registration, "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
+    else:
+        print(aircraft_registration, "Aircraft registration not found in OGN DDB.")
+        live_track_id = 'XXXXXX'
+
+    return live_track_id
+
+# Performs a lookup in ogn ddb
+def ogn_check(aircraft_registration, live_track_id):
+    ddb_import()
+    if aircraft_registration in ddb_entries.values():
+        live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(aircraft_registration)]
+        print(aircraft_registration, "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
+    else:
+        print(aircraft_registration, "Aircraft registration not found in OGN DDB.")
+        live_track_id = 'XXXXXX'
+
+    if live_track_id in ddb_entries.keys():
+        if aircraft_registration == ddb_entries[live_track_id]:
+            print("Live_track_id is also in OGN DDB. Registrations match. Plausible id.")
+            
+        else:
+            print("Live_track_id is also in OGN DDB. Registrations DOES NOT match. Check id.")
+            
+    else:
+        print("Live_track_id is not in OGN DDB. Plausibility check not possible.")
+
+    return live_track_id
+
 
 
 def process_beacon(raw_message, reference_date=None):
@@ -83,6 +123,13 @@ def gist_writer(task):
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
 
+    gh_ratelimit =  gh.ratelimit_remaining
+    if gh_ratelimit <= 50:
+        raise ValueError("Your Github API access rate limit is almost exceeded: '{}' remaining access. Aborting.".format(gh_ratelimit))
+    else:
+        print("Rate limit remaining: {} access".format(gh_ratelimit))
+        
+        
     # Get Gist-ID from config
     gist_id = app.config['GIST_ID']
 
@@ -121,6 +168,8 @@ def gist_writer(task):
             # Gist-ID is not valid
             raise ValueError("This gist_id is not valid: '{}' Aborting.".format(gist_id))
 
+        
+        
         # Edit the gist
         gist.edit(gist_comment, files)
 

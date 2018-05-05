@@ -1,5 +1,6 @@
 import requests
 import json
+from app.utils import ogn_check, ogn_lookup
 from datetime import datetime
 from app.model import Contest, ContestClass, Contestant, Pilot, Task, Location, Turnpoint
 # from sqlalchemy.sql.expression import true
@@ -66,30 +67,7 @@ def get_strepla_contest_body(competition_id):
                           'aircraft_registration': contestant_row['glider_callsign'],
                           'contestant_number': contestant_row['glider_cid'],
                           'handicap': contestant_row['glider_index'],
-                          'live_track_id': contestant_row['flarm_ID']}
-
-            # Do some checks of the live_track_id
-            if parameters['live_track_id']:
-                print("Live_track_id defined via StrePla API")
-                # Check if live_track_id is also in OGN DDB
-                if parameters['live_track_id'] in ddb_entries.keys():
-                    if parameters['aircraft_registration'] == ddb_entries[parameters['live_track_id']]:
-                        print("Live_track_id is also in OGN DDB. Registrations match. Plausible id.")
-                    else:
-                        print("Live_track_id is also in OGN DDB. Registrations DOES NOT match. Check id.")
-                else:
-                    print("Live_track_id is not in OGN DDB. Plausibility check not possible.")
-            else:
-                # Live_track_id not provided. Performing Lookup on OGN DDB.
-                if contestant_row['glider_callsign'] in ddb_entries.values():
-                    live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(contestant_row['glider_callsign'])]
-                    print(parameters['aircraft_registration'], "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
-                    id_parameters = {'live_track_id': live_track_id}
-                else:
-                    print(parameters['aircraft_registration'], "Aircraft registration not found in OGN DDB.")
-                    id_parameters = {'live_track_id': 'XXXXXX'}
-
-                parameters.update(id_parameters)
+                          'live_track_id': ogn_check(contestant_row['glider_callsign'],contestant_row['live_track_id']) if 'live_track_id' in contestant_row else ogn_lookup(contestant_row['glider_callsign'])}
 
             contestant = Contestant(**parameters)
             contestant.contest_class = contest_class

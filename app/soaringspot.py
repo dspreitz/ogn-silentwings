@@ -1,5 +1,5 @@
 from app.model import Contest, ContestClass, Contestant, Pilot, Task, Location, Turnpoint
-
+from app.utils import ogn_lookup, ogn_check
 import requests
 from datetime import datetime
 from app.utils import ddb_import
@@ -91,53 +91,20 @@ def get_soaringspot_contests(url, client_id, secret):
                                           'club': contestant_row['club'] if 'club' in contestant_row else None,
                                           'contestant_number': contestant_row['contestant_number'],
                                           'handicap': contestant_row['handicap'],
-                                          'live_track_id': contestant_row['live_track_id'] if 'live_track_id' in contestant_row else None,
+                                          'live_track_id': ogn_check(contestant_row['aircraft_registration'],contestant_row['live_track_id']) if 'live_track_id' in contestant_row else ogn_lookup(contestant_row['aircraft_registration']),
                                           'name': contestant_row['name'],
                                           'not_competing': contestant_row['not_competing'],
                                           'pure_glider': contestant_row['pure_glider'],
                                           'sponsors': contestant_row['sponsors'] if 'sponsors' in contestant_row else None}
-                            # contestant = Contestant(**parameters)
-                            # contestant.contest_class = contest_class
-                            
-                            # =================
-                            # TODO: Put this in it's own function as this code is repeated in strepla
-                            # Do some checks of the live_track_id
-                            if parameters['live_track_id']:
-                                print("Live_track_id defined via SoaringSpot API")
-                                # Check if live_track_id is also in OGN DDB
-                                if parameters['live_track_id'] in ddb_entries.keys():
-                                    if parameters['aircraft_registration'] == ddb_entries[parameters['live_track_id']]:
-                                        print("Live_track_id is also in OGN DDB. Registrations match. Plausible id.")
-                                        
-                                    else:
-                                        print("Live_track_id is also in OGN DDB. Registrations DOES NOT match. Check id.")
-                                        
-                                else:
-                                    print("Live_track_id is not in OGN DDB. Plausibility check not possible.")
-                                    
-                            else:
-                                # Live_track_id not provided. Performing Lookup on OGN DDB.
-                                if contestant_row['aircraft_registration'] in ddb_entries.values():
-                                    live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(contestant_row['aircraft_registration'])]
-                                    print(parameters['aircraft_registration'], "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
-                                    id_parameters = {'live_track_id': live_track_id}
-                                else:
-                                    print(parameters['aircraft_registration'], "Aircraft registration not found in OGN DDB.")
-                                    id_parameters = {'live_track_id': 'XXXXXX'}
-
-                            parameters.update(id_parameters)
-                            #=============
-                            
+                                 
                             contestant = Contestant(**parameters)
                             contestant.contest_class = contest_class
                        
-                            
-
                             for pilot_row in contestant_row['pilot']:
                                 parameters = {'civl_id': pilot_row['civl_id'],
                                               'email': pilot_row['email'] if 'email' in pilot_row else None,
                                               'first_name': pilot_row['first_name'],
-                                              'igc_id': pilot_row['igc_id'] if 'email' in pilot_row else None,
+                                              'igc_id': pilot_row['igc_id'] if 'igc_id' in pilot_row else None,
                                               'last_name': pilot_row['last_name'],
                                               'nationality': pilot_row['nationality'] if 'nationality' in pilot_row else None}
                                 pilot = Pilot(**parameters)
