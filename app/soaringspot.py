@@ -88,7 +88,7 @@ def get_soaringspot_contests(url, client_id, secret):
                                           'club': contestant_row['club'] if 'club' in contestant_row else None,
                                           'contestant_number': contestant_row['contestant_number'],
                                           'handicap': contestant_row['handicap'],
-                                          'live_track_id': contestant_row['live_track_id'],
+                                          'live_track_id': contestant_row['live_track_id'] if 'live_track_id' in contestant_row else None,
                                           'name': contestant_row['name'],
                                           'not_competing': contestant_row['not_competing'],
                                           'pure_glider': contestant_row['pure_glider'],
@@ -98,11 +98,11 @@ def get_soaringspot_contests(url, client_id, secret):
 
                             for pilot_row in contestant_row['pilot']:
                                 parameters = {'civl_id': pilot_row['civl_id'],
-                                              'email': pilot_row['email'],
+                                              'email': pilot_row['email'] if 'email' in pilot_row else None,
                                               'first_name': pilot_row['first_name'],
-                                              'igc_id': pilot_row['igc_id'],
+                                              'igc_id': pilot_row['igc_id'] if 'email' in pilot_row else None,
                                               'last_name': pilot_row['last_name'],
-                                              'nationality': pilot_row['nationality']}
+                                              'nationality': pilot_row['nationality']if 'nationality' in pilot_row else None}
                                 pilot = Pilot(**parameters)
                                 pilot.contestant = contestant
 
