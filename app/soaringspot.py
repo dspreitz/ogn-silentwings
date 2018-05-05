@@ -2,6 +2,7 @@ from app.model import Contest, ContestClass, Contestant, Pilot, Task, Location, 
 
 import requests
 from datetime import datetime
+from app.utils import ddb_import
 
 
 def check_soaringspot_time():
@@ -46,6 +47,7 @@ def get_soaringspot_document(url, client_id, secret):
 
 def get_soaringspot_contests(url, client_id, secret):
     import math
+    ddb_entries = ddb_import()
     document = get_soaringspot_document(url, client_id, secret)
     print(document)
     contests = list()
@@ -73,7 +75,8 @@ def get_soaringspot_contests(url, client_id, secret):
 
                 for contest_class_row in contest_row['classes']:
                     parameters = {'category': contest_class_row['category'],
-                                  'type': contest_class_row['type']}
+                                  'type': contest_class_row['type'],
+                                  'name': contest_class_row['name']}
                     contest_class = ContestClass(**parameters)
                     contest_class.contest = contest
 
@@ -93,8 +96,42 @@ def get_soaringspot_contests(url, client_id, secret):
                                           'not_competing': contestant_row['not_competing'],
                                           'pure_glider': contestant_row['pure_glider'],
                                           'sponsors': contestant_row['sponsors'] if 'sponsors' in contestant_row else None}
+                            # contestant = Contestant(**parameters)
+                            # contestant.contest_class = contest_class
+                            
+                            # =================
+                            # TODO: Put this in it's own function as this code is repeated in strepla
+                            # Do some checks of the live_track_id
+                            if parameters['live_track_id']:
+                                print("Live_track_id defined via SoaringSpot API")
+                                # Check if live_track_id is also in OGN DDB
+                                if parameters['live_track_id'] in ddb_entries.keys():
+                                    if parameters['aircraft_registration'] == ddb_entries[parameters['live_track_id']]:
+                                        print("Live_track_id is also in OGN DDB. Registrations match. Plausible id.")
+                                        
+                                    else:
+                                        print("Live_track_id is also in OGN DDB. Registrations DOES NOT match. Check id.")
+                                        
+                                else:
+                                    print("Live_track_id is not in OGN DDB. Plausibility check not possible.")
+                                    
+                            else:
+                                # Live_track_id not provided. Performing Lookup on OGN DDB.
+                                if contestant_row['aircraft_registration'] in ddb_entries.values():
+                                    live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(contestant_row['aircraft_registration'])]
+                                    print(parameters['aircraft_registration'], "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
+                                    id_parameters = {'live_track_id': live_track_id}
+                                else:
+                                    print(parameters['aircraft_registration'], "Aircraft registration not found in OGN DDB.")
+                                    id_parameters = {'live_track_id': 'XXXXXX'}
+
+                            parameters.update(id_parameters)
+                            #=============
+                            
                             contestant = Contestant(**parameters)
                             contestant.contest_class = contest_class
+                       
+                            
 
                             for pilot_row in contestant_row['pilot']:
                                 parameters = {'civl_id': pilot_row['civl_id'],
@@ -102,7 +139,7 @@ def get_soaringspot_contests(url, client_id, secret):
                                               'first_name': pilot_row['first_name'],
                                               'igc_id': pilot_row['igc_id'] if 'email' in pilot_row else None,
                                               'last_name': pilot_row['last_name'],
-                                              'nationality': pilot_row['nationality']if 'nationality' in pilot_row else None}
+                                              'nationality': pilot_row['nationality'] if 'nationality' in pilot_row else None}
                                 pilot = Pilot(**parameters)
                                 pilot.contestant = contestant
 
@@ -153,7 +190,7 @@ def get_soaringspot_contests(url, client_id, secret):
                                                   'oz_max_altitude': point_row['oz_max_altitude'],
                                                   'oz_move': point_row['oz_move'],
                                                   'oz_reduce': point_row['oz_reduce'],
-                                                  'speed_section_type': point_row['speed_section_type']}
+                                                  'speed_section_type': point_row['speed_section_type'] if 'speed_section_type' in point_row else None}
                                     turnpoint = Turnpoint(**parameters)
                                     turnpoint.task = task
 

@@ -87,7 +87,7 @@ def gist_writer(task):
     gist_id = app.config['GIST_ID']
 
     # Generate the gist comment
-    gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.type.replace("_", "").replace("-", "").upper()
+    gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.name.replace("_", "").replace("-", "").upper()
 
     files = {}
     files_filter = {

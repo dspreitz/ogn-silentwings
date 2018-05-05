@@ -7,6 +7,7 @@ class ContestClass(db.Model):
     __tablename__ = "contest_classes"
 
     id = Column(Integer, primary_key=True)
+    name = Column(String)
     category = Column(String)
     type = Column(String)
     active_task_gist_url = Column(String)
@@ -32,8 +33,9 @@ class ContestClass(db.Model):
         return "\n".join(result_list)
 
     def __repr__(self):
-        return "<ContestClass %s: %s,%s,%s,%s>" % (
+        return "<ContestClass %s: %s, %s,%s,%s,%s>" % (
             self.id,
+            self.name,
             self.category,
             self.type,
             self.active_task_gist_url,
