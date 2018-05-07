@@ -7,18 +7,27 @@ from app.model import Contest, ContestClass, Contestant, Pilot, Task, Location, 
 
 
 def list_strepla_contests():
-    url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=recent&daysPeriod=360"
+    url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=recent&daysPeriod=700"
     r = requests.get(url)
     json_data = json.loads(r.text.encode('utf-8'))
 
-    print("\nID : Name of competition - Place of competition")
+    print("\nID : Name of past competition - Place of competition")
+    print("=================================================================")
+    for contest_row in json_data:
+        print("{id}: {name} - {Location}".format(**contest_row))
+
+    url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=active&daysPeriod=-1"
+    r = requests.get(url)
+    print(r)
+    json_data = json.loads(r.text.encode('utf-8'))
+
+    print("\nID : Name of future competition - Place of competition")
     print("=================================================================")
     for contest_row in json_data:
         print("{id}: {name} - {Location}".format(**contest_row))
 
 
 def get_strepla_contest_body(competition_id):
-    from app.utils import ddb_import
     contest_url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=info&cId=" + str(competition_id) + "&daysPeriod=700"
     # print(contest_url)
     r = requests.get(contest_url)
@@ -39,13 +48,14 @@ def get_strepla_contest_body(competition_id):
     location = Location(**parameters)
     contest.location = location
 
+    # To fake future StrePla comps until the API allows access as requested per e-mail
+    # competition_id = 487
+    
     # Process contest class info
     contest_class_url = "http://www.strepla.de/scs/ws/compclass.ashx?cmd=overview&cid=" + str(competition_id)
     # print(contest_class_url)
     r = requests.get(contest_class_url)
     contest_class_data = json.loads(r.text.encode('utf-8'))
-
-    ddb_entries = ddb_import()
 
     for contest_class_row in contest_class_data:
         parameters = {'category': contest_class_row['rulename'],

@@ -137,13 +137,18 @@ def gist_writer(task):
     gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.name.replace("_", "").replace("-", "").upper()
 
     files = {}
+    
+    # files_filter deactivated to prevent over writing of filter files in github as most contest organizers fail to maintain
+    # the correct flarm-ids in the task setting program
+    """
     files_filter = {
         'filter': {
             'content': task.contest_class.gt_filter()
         }
     }
     files.update(files_filter)
-
+    """
+    
     files_task = {
         'task': {
             'content': task.to_xml()
