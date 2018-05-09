@@ -1,8 +1,8 @@
 from app.model import Contest, ContestClass, Contestant, Pilot, Task, Location, Turnpoint
-from app.utils import ogn_lookup, ogn_check
+from app.utils import ogn_check
 import requests
 from datetime import datetime
-from app.utils import ddb_import
+# from app.utils import ddb_import
 
 
 def check_soaringspot_time():
@@ -47,7 +47,7 @@ def get_soaringspot_document(url, client_id, secret):
 
 def get_soaringspot_contests(url, client_id, secret):
     import math
-    ddb_entries = ddb_import()
+    # ddb_entries = ddb_import()
     document = get_soaringspot_document(url, client_id, secret)
     print(document)
     contests = list()
@@ -86,20 +86,21 @@ def get_soaringspot_contests(url, client_id, secret):
                         print("No contestant")
                     else:
                         for contestant_row in contestants_doc['contestants']:
+                            print(contestant_row)
                             parameters = {'aircraft_model': contestant_row['aircraft_model'],
                                           'aircraft_registration': contestant_row['aircraft_registration'],
                                           'club': contestant_row['club'] if 'club' in contestant_row else None,
                                           'contestant_number': contestant_row['contestant_number'],
                                           'handicap': contestant_row['handicap'],
-                                          'live_track_id': ogn_check(contestant_row['aircraft_registration'],contestant_row['live_track_id']) if 'live_track_id' in contestant_row else ogn_lookup(contestant_row['aircraft_registration']),
+                                          'live_track_id': ogn_check(contestant_row['aircraft_registration'], contestant_row['live_track_id']) if 'live_track_id' in contestant_row else ogn_check(contestant_row['aircraft_registration'], ""),
                                           'name': contestant_row['name'],
                                           'not_competing': contestant_row['not_competing'],
                                           'pure_glider': contestant_row['pure_glider'],
                                           'sponsors': contestant_row['sponsors'] if 'sponsors' in contestant_row else None}
-                                 
+
                             contestant = Contestant(**parameters)
                             contestant.contest_class = contest_class
-                       
+
                             for pilot_row in contestant_row['pilot']:
                                 parameters = {'civl_id': pilot_row['civl_id'],
                                               'email': pilot_row['email'] if 'email' in pilot_row else None,

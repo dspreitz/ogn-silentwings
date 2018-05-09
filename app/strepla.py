@@ -1,6 +1,6 @@
 import requests
 import json
-from app.utils import ogn_check, ogn_lookup
+from app.utils import ogn_check
 from datetime import datetime
 from app.model import Contest, ContestClass, Contestant, Pilot, Task, Location, Turnpoint
 # from sqlalchemy.sql.expression import true
@@ -49,8 +49,8 @@ def get_strepla_contest_body(competition_id):
     contest.location = location
 
     # To fake future StrePla comps until the API allows access as requested per e-mail
-    # competition_id = 487
-    
+    # competition_id = 496
+
     # Process contest class info
     contest_class_url = "http://www.strepla.de/scs/ws/compclass.ashx?cmd=overview&cid=" + str(competition_id)
     # print(contest_class_url)
@@ -59,7 +59,8 @@ def get_strepla_contest_body(competition_id):
 
     for contest_class_row in contest_class_data:
         parameters = {'category': contest_class_row['rulename'],
-                      'type': contest_class_row['name']}
+                      'type': contest_class_row['name'],
+                      'name': contest_class_row['name']}
 
         contest_class = ContestClass(**parameters)
         contest_class.contest = contest
@@ -77,7 +78,7 @@ def get_strepla_contest_body(competition_id):
                           'aircraft_registration': contestant_row['glider_callsign'],
                           'contestant_number': contestant_row['glider_cid'],
                           'handicap': contestant_row['glider_index'],
-                          'live_track_id': ogn_check(contestant_row['glider_callsign'],contestant_row['live_track_id']) if 'live_track_id' in contestant_row else ogn_lookup(contestant_row['glider_callsign'])}
+                          'live_track_id': ogn_check(contestant_row['glider_callsign'], contestant_row['flarm_ID'])}
 
             contestant = Contestant(**parameters)
             contestant.contest_class = contest_class
@@ -110,9 +111,14 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
             print("Task neutralized for day " + all_task_data_item['date'] + ". Skipping.")
             continue
 
+        # TODO: If no class is available, generate usefull error message.
         task_url = "http://www.strepla.de/scs/ws/results.ashx?cmd=task&cID=" + str(competition_id) + "&idDay=" + str(all_task_data_item['idCD']) + "&activeTaskOnly=true"
         print(task_url)
         r = requests.get(task_url)
+        if r.status_code != 200:
+            print("Error occured while loading task")
+            break
+
         task_data = json.loads(r.text.encode('utf-8'))
         print(task_data)
         for task_data_item in task_data['tasks']:

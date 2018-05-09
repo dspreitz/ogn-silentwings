@@ -23,40 +23,75 @@ def ddb_import():
 
     return ddb_entries
 
-# Performs a lookup in ogn ddb
-def ogn_lookup(aircraft_registration):
-    ddb_import()
-    if aircraft_registration in ddb_entries.values():
-        live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(aircraft_registration)]
-        print(aircraft_registration, "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
-    else:
-        print(aircraft_registration, "Aircraft registration not found in OGN DDB.")
-        live_track_id = 'XXXXXX'
-
-    return live_track_id
 
 # Performs a lookup in ogn ddb
 def ogn_check(aircraft_registration, live_track_id):
     ddb_import()
-    if aircraft_registration in ddb_entries.values():
-        live_track_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(aircraft_registration)]
-        print(aircraft_registration, "Live_track_id not provided. OGN DDB lookup found: ", live_track_id)
-    else:
-        print(aircraft_registration, "Aircraft registration not found in OGN DDB.")
-        live_track_id = 'XXXXXX'
 
-    if live_track_id in ddb_entries.keys():
-        if aircraft_registration == ddb_entries[live_track_id]:
-            print("Live_track_id is also in OGN DDB. Registrations match. Plausible id.")
-            
-        else:
-            print("Live_track_id is also in OGN DDB. Registrations DOES NOT match. Check id.")
-            
+    if live_track_id == "":
+        live_track_id = None
+
+    if aircraft_registration == "":
+        aircraft_registration = None
+
+    if aircraft_registration in ddb_entries.values():
+        ogn_id = list(ddb_entries.keys())[list(ddb_entries.values()).index(aircraft_registration)]
+        # print(aircraft_registration, "OGN DDB lookup found: ", live_track_id)
     else:
-        print("Live_track_id is not in OGN DDB. Plausibility check not possible.")
+        ogn_id = None
+        # print(aircraft_registration, "Aircraft registration not found in OGN DDB.", ogn_id, live_track_id)
+
+    if live_track_id is not None:
+        # Check if live_track_id is 6 digits long and check if it is a hex number
+        if len(live_track_id) == 6:
+            try:
+                int(live_track_id, 16)
+                # print("HEX check passed. 6")
+
+            except ValueError:
+                print(aircraft_registration, "The live_track_id provided is no valid HEX number: ", live_track_id)
+
+        elif len(live_track_id) == 8:
+            try:
+                int(live_track_id[0:2])
+
+            except ValueError:
+                print(aircraft_registration, "The live_track_id provided has 8 digits and no valid first two digits: ", live_track_id)
+
+            try:
+                int(live_track_id[2:], 16)
+                # print("HEX check passed 8")
+
+            except ValueError:
+                print(aircraft_registration, "The live_track_id provided has 8 digits and no valid last six digits: ", live_track_id)
+
+        else:
+                print(aircraft_registration, "The live_track_id provided has an odd length", live_track_id)
+
+        if ogn_id is not None:
+            if (len(live_track_id) == 6 and (ogn_id == live_track_id)) or (len(live_track_id) == 8 and (ogn_id == live_track_id[2:])):
+                print(aircraft_registration, "Live_track_id is also in OGN DDB. Registrations match. Plausible ID.", ogn_id, live_track_id)
+
+            else:
+                if len(live_track_id) == 6:
+                    print(aircraft_registration, "Live_track_id is also in OGN DDB. Registrations DOES NOT match. Check ID.", ogn_id, live_track_id)
+                elif len(live_track_id) == 8:
+                    pass
+                else:
+                    print(aircraft_registration, "Live_track_id has strange length. Please check: ", live_track_id)
+        else:
+            print(aircraft_registration, "Live_track_id is not in OGN DDB. Plausibility check not possible.", ogn_id, live_track_id)
+
+    else:
+        if ogn_id is not None:
+            print(aircraft_registration, "Live_track_id not provided. Using OGN ID instead.", ogn_id, live_track_id)
+            live_track_id = ogn_id
+
+        else:
+            print(aircraft_registration, "Live_track_id not provided. OGN ID not found. Using XXXXXX as fake ID.", ogn_id, live_track_id)
+            live_track_id = 'XXXXXX'
 
     return live_track_id
-
 
 
 def process_beacon(raw_message, reference_date=None):
@@ -123,13 +158,12 @@ def gist_writer(task):
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
 
-    gh_ratelimit =  gh.ratelimit_remaining
+    gh_ratelimit = gh.ratelimit_remaining
     if gh_ratelimit <= 50:
         raise ValueError("Your Github API access rate limit is almost exceeded: '{}' remaining access. Aborting.".format(gh_ratelimit))
     else:
         print("Rate limit remaining: {} access".format(gh_ratelimit))
-        
-        
+
     # Get Gist-ID from config
     gist_id = app.config['GIST_ID']
 
@@ -137,7 +171,7 @@ def gist_writer(task):
     gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.name.replace("_", "").replace("-", "").upper()
 
     files = {}
-    
+
     # files_filter deactivated to prevent over writing of filter files in github as most contest organizers fail to maintain
     # the correct flarm-ids in the task setting program
     """
@@ -148,7 +182,7 @@ def gist_writer(task):
     }
     files.update(files_filter)
     """
-    
+
     files_task = {
         'task': {
             'content': task.to_xml()
@@ -173,8 +207,6 @@ def gist_writer(task):
             # Gist-ID is not valid
             raise ValueError("This gist_id is not valid: '{}' Aborting.".format(gist_id))
 
-        
-        
         # Edit the gist
         gist.edit(gist_comment, files)
 
