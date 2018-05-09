@@ -115,7 +115,7 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
         # print(task_url)
         r = requests.get(task_url)
         if r.status_code != 200:
-            print("Error occured while loading task. Competition id: {} idDay = {}".format(competition_id,all_task_data_item['idCD']))
+            print("Error occured while loading task. Competition id: {} idDay = {}".format(competition_id, all_task_data_item['idCD']))
             break
 
         task_data = json.loads(r.text.encode('utf-8'))
