@@ -18,7 +18,7 @@ def list_strepla_contests():
 
     url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=active&daysPeriod=-1"
     r = requests.get(url)
-    print(r)
+    # print(r)
     json_data = json.loads(r.text.encode('utf-8'))
 
     print("\nID : Name of future competition - Place of competition")
@@ -102,7 +102,7 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
     tasks = list()
     for all_task_data_item in all_task_data:
         # print(task_data_item)
-        print(all_task_data_item['idCD'], all_task_data_item['date'], all_task_data_item['state'])
+        # print(all_task_data_item['idCD'], all_task_data_item['date'], all_task_data_item['state'])
         if int(all_task_data_item['state']) == 0:
             print("Task not planned for day " + all_task_data_item['date'] + ". Skipping.")
             continue
@@ -111,12 +111,11 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
             print("Task neutralized for day " + all_task_data_item['date'] + ". Skipping.")
             continue
 
-        # TODO: If no class is available, generate usefull error message.
         task_url = "http://www.strepla.de/scs/ws/results.ashx?cmd=task&cID=" + str(competition_id) + "&idDay=" + str(all_task_data_item['idCD']) + "&activeTaskOnly=true"
-        print(task_url)
+        # print(task_url)
         r = requests.get(task_url)
         if r.status_code != 200:
-            print("Error occured while loading task")
+            print("Error occured while loading task. Competition id: {} idDay = {}".format(competition_id,all_task_data_item['idCD']))
             break
 
         task_data = json.loads(r.text.encode('utf-8'))
@@ -241,7 +240,7 @@ def get_strepla_contestants(cID, cc=None):
             i = 0
             while i < len(data):
                 data_dict = data[i]
-                print(data_dict)
+                # print(data_dict)
                 i += 1
 
 # Get List of contest days
