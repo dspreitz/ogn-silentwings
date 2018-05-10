@@ -174,14 +174,14 @@ def gist_writer(task):
 
     # files_filter deactivated to prevent over writing of filter files in github as most contest organizers fail to maintain
     # the correct flarm-ids in the task setting program
-    """
-    files_filter = {
-        'filter': {
-            'content': task.contest_class.gt_filter()
+    
+    if gist_id is None:
+        files_filter = {
+            'filter': {
+                'content': task.contest_class.gt_filter()
+            }
         }
-    }
-    files.update(files_filter)
-    """
+        files.update(files_filter)
 
     files_task = {
         'task': {

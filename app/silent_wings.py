@@ -99,8 +99,10 @@ def create_cuc(contestname, date):
     result_list.append(entry)
 
     # Generate Footer of CUC file
-    entry = "V,HighEnl=300,AsViolate=True,MinFinAlt=0m,MaxFinAlt=10000m,MaxStartAlt=0m,MaxAlt=0m,MaxAltCorr=50.0m,AltTimeout=0,StartGsp=0km/h,FixRate=10,ValFailed=True\nC301299000000301299000003\nC4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\nC4234110N00044360WSanta Cilia - LECI\nC4206290N00028590EBenabarre\nC4203020N00117320EOliana\nC4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\nTSK,WpDis=True,MinDis=True,NearDis=0.5km,NearAlt=200.0m,MinFinAlt=0.0km\nXTest day"
+    entry = "V,HighEnl=300,AsViolate=True,MinFinAlt=0m,MaxFinAlt=10000m,MaxStartAlt=0m,MaxAlt=0m,MaxAltCorr=50.0m,AltTimeout=0,StartGsp=0km/h,FixRate=10,ValFailed=True\nC301299000000301299000003\n"
     result_list.append(entry)
+    result_list.append("C4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\nC4234110N00044360WSanta Cilia - LECI\nC4206290N00028590EBenabarre\nC4203020N00117320EOliana\nC4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\n")
+    result_list.append("TSK,WpDis=True,MinDis=True,NearDis=0.5km,NearAlt=200.0m,MinFinAlt=0.0km\nXTest day")
     entry = 'E000,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE001,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE002,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE003,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE004,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE005,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\n'
     result_list.append(entry)
 
@@ -108,3 +110,5 @@ def create_cuc(contestname, date):
     print("\n".join(result_list))
     print("=========================")
     return "\n".join(result_list)
+
+

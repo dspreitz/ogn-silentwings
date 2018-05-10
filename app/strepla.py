@@ -183,7 +183,7 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
                 parameters.update(tp_parameters)
                 turnpoint = Turnpoint(**parameters)
                 # print("=== Turnpoint ===")
-                # print(turnpoint)
+                # print(turnpoint.c_igc())
                 turnpoint.task = task
 
             # task.contest_class = contest_class
