@@ -107,3 +107,10 @@ venv.bak/
 tester.py
 data-dev.sqlite
 data-test.sqlite
+gist.py
+data.sqlite
+data.fln
+test.txt
+tester2.py
+OGN_DDB.txt
+
