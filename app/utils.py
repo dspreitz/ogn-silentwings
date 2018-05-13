@@ -10,17 +10,37 @@ ddb_entries = None
 
 # Imports OGN DDB into dict
 def ddb_import():
+    import json
     global ddb_entries
     if ddb_entries is None:
         ddb_url = "http://ddb.glidernet.org/download/"
         r = requests.get(ddb_url)
-        rows = '\n'.join(i for i in r.text.splitlines() if i[0] != '#')
-        data = csv.reader(StringIO(rows), quotechar="'", quoting=csv.QUOTE_ALL)
-
-        ddb_entries = dict()
-        for row in data:
-            ddb_entries[row[1]] = row[3]
-
+        print(r.status_code)
+        
+        # Check if DDB request was successfull
+        if r.status_code == 200:
+            rows = '\n'.join(i for i in r.text.splitlines() if i[0] != '#')
+            data = csv.reader(StringIO(rows), quotechar="'", quoting=csv.QUOTE_ALL)
+    
+            ddb_entries = dict()
+            for row in data:
+                ddb_entries[row[1]] = row[3]
+                
+            with open('OGN_DDB.txt', 'w') as file:
+                
+                file.write(json.dumps(ddb_entries)) # use `json.loads` to do the reverse
+                
+        else:
+            from pathlib import Path
+            my_file = Path("OGN_DDB.txt")
+            if my_file.is_file():
+                # 
+                with open('OGN_DDB.txt', 'r') as file:
+                    ddb_entries = json.loads(file.read()) # use `json.loads` to do the reverse
+                    print("Could not reach OGN DDB. Reverting to OGN DDB file stores on disk.")
+            else:
+                raise ValueError("Error occurred while loading OGN DDB and did not find OGN DDB file on disk.")
+            
     return ddb_entries
 
 
