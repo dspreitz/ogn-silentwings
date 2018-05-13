@@ -10,37 +10,63 @@ ddb_entries = None
 
 # Imports OGN DDB into dict
 def ddb_import():
+    import flarmnet
     import json
+    from pathlib import Path
+
     global ddb_entries
     if ddb_entries is None:
         ddb_url = "http://ddb.glidernet.org/download/"
+        flarmnet_url = "http://www.flarmnet.org/files/data.fln"
+
+        # Load the OGN Device Data Base (DDB)
         r = requests.get(ddb_url)
-        print(r.status_code)
-        
-        # Check if DDB request was successfull
+        # print(r.status_code)
+
+        # Check if DDB request was successful
         if r.status_code == 200:
             rows = '\n'.join(i for i in r.text.splitlines() if i[0] != '#')
             data = csv.reader(StringIO(rows), quotechar="'", quoting=csv.QUOTE_ALL)
-    
+
             ddb_entries = dict()
             for row in data:
                 ddb_entries[row[1]] = row[3]
-                
+
             with open('OGN_DDB.txt', 'w') as file:
-                
-                file.write(json.dumps(ddb_entries)) # use `json.loads` to do the reverse
-                
+                file.write(json.dumps(ddb_entries))  # use `json.loads` to do the reverse
+
         else:
-            from pathlib import Path
-            my_file = Path("OGN_DDB.txt")
-            if my_file.is_file():
-                # 
+            if Path("OGN_DDB.txt").is_file():
                 with open('OGN_DDB.txt', 'r') as file:
-                    ddb_entries = json.loads(file.read()) # use `json.loads` to do the reverse
+                    ddb_entries = json.loads(file.read())  # use `json.loads` to do the reverse
                     print("Could not reach OGN DDB. Reverting to OGN DDB file stores on disk.")
             else:
                 raise ValueError("Error occurred while loading OGN DDB and did not find OGN DDB file on disk.")
-            
+
+        # Load the FlarmNet data base and save it to file
+        with open('data.fln', "wb") as file:
+            # get request
+            response = requests.get(flarmnet_url, 'data.fln')
+            if r.status_code == 200:
+                # write to file
+                file.write(response.content)
+
+            else:
+                print("Could not load FlarmNet File from internet.")
+
+        if Path("data.fln").is_file():
+            with open('data.fln', 'r') as ffile:
+                reader = flarmnet.Reader(ffile)
+                for record in reader.read():
+                    # print(record.id, record.registration)
+                    # If FlarmNet-ID is not already in OGN DDB amend
+                    if record.id not in ddb_entries:
+                        # print("Adding entry from Flarmnet DB: ",record.id,record.registration)
+                        ddb_entries[record.id] = record.registration
+
+        else:
+            print("No FlarmNet file found.")
+
     return ddb_entries
 
 
@@ -194,7 +220,7 @@ def gist_writer(task):
 
     # files_filter deactivated to prevent over writing of filter files in github as most contest organizers fail to maintain
     # the correct flarm-ids in the task setting program
-    
+
     if gist_id is None:
         files_filter = {
             'filter': {

@@ -37,26 +37,24 @@ class Turnpoint(db.Model):
     # Returns turnpoint coordinated in IGC format
     def c_igc(self):
         import math
-        
-        latminutes = self.latitude%1.0*60
-        longminutes = self.longitude%1.0*60
-    
+
+        latminutes = self.latitude % 1.0 * 60
+        longminutes = self.longitude % 1.0 * 60
+
         if self.latitude >= 0:
             NS = 'N'
         else:
             NS = 'S'
-            
+
         if self.longitude >= 0:
             EW = 'E'
         else:
             EW = 'W'
-    
+
         # C4223150N00151500ELa Cerdanya
-        result = 'C{latdeg:02d}{latmin:2.3f}{ns:1s}{longdeg:02d}{longmin:2.3f}{ew:1s}{tpname}\n'.format(latdeg=abs(int(math.floor(self.latitude))),latmin=latminutes,ns=NS,longdeg=abs(int(math.floor(self.longitude))),longmin=longminutes,ew=EW,tpname=self.name).replace('.','')
+        result = 'C{latdeg:02d}{latmin:2.3f}{ns:1s}{longdeg:02d}{longmin:2.3f}{ew:1s}{tpname}\n'.format(latdeg=abs(int(math.floor(self.latitude))), latmin=latminutes, ns=NS, longdeg=abs(int(math.floor(self.longitude))), longmin=longminutes, ew=EW, tpname=self.name).replace('.', '')
         return result
-    
-        
-        
+
     def __repr__(self):
         return "<Turnpoint %s: %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s>" % (
             self.id,

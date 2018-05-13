@@ -110,5 +110,3 @@ def create_cuc(contestname, date):
     print("\n".join(result_list))
     print("=========================")
     return "\n".join(result_list)
-
-
