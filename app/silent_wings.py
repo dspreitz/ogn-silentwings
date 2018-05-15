@@ -2,6 +2,7 @@ from app.model import Contest, Contestant, Beacon
 from app import db
 
 from datetime import timezone
+from app.model.contestant import Contestant
 
 
 def create_active_contests_string():
@@ -62,22 +63,31 @@ def create_tracker_data(tracker_id):
     return '\n'.join(result_list)
 
 
-def create_cuc_pilots_block():
+def create_cuc_pilots_block(contest_name_with_class_type):
+    from app.model import ContestClass
+    print(contest_name_with_class_type)
+    contest_name = contest_name_with_class_type.partition("_")[0]
+    # short_name = contest_name.replace(" ", "").upper()
+    contest_class_type = contest_name_with_class_type.partition("_")[2]
+    print(contest_class_type)
+
     # TODO: Needs contest_name_with_class_type as input to find correct contestants per class
     result_list = list()
     result_list.append("[Pilots]")
 
     for contestant in db.session.query(Contestant):
-        pilot = contestant.pilots[0]
-        entry_dict = {'first_name': pilot.first_name,
-                      'last_name': pilot.last_name,
-                      'live_track_id': contestant.live_track_id,
-                      'aircraft_model': contestant.aircraft_model,
-                      'aircraft_registration': contestant.aircraft_registration,
-                      'contestant_number': contestant.contestant_number}
-
-        entry = '"{first_name}","{last_name}",*0,"{live_track_id}","{aircraft_model}","{aircraft_registration}","{contestant_number}","",0,"",0,"",1,"",""'.format(**entry_dict)
-        result_list.append(entry)
+        print(contestant.contest_class.name.upper())
+        if contestant.contest_class.name.upper() == contest_class_type:
+            pilot = contestant.pilots[0]
+            entry_dict = {'first_name': pilot.first_name,
+                          'last_name': pilot.last_name,
+                          'live_track_id': contestant.live_track_id,
+                          'aircraft_model': contestant.aircraft_model,
+                          'aircraft_registration': contestant.aircraft_registration,
+                          'contestant_number': contestant.contestant_number}
+    
+            entry = '"{first_name}","{last_name}",*0,"{live_track_id}","{aircraft_model}","{aircraft_registration}","{contestant_number}","",0,"",0,"",1,"",""'.format(**entry_dict)
+            result_list.append(entry)
 
     result_list.append("\n[Starts]\n")
     # print("\n".join(result_list))
@@ -85,6 +95,7 @@ def create_cuc_pilots_block():
 
 
 def create_cuc(contestname, date):
+    print(contestname,date)
     result_list = list()
     # Generate Header of CUC file
     entry = "[Options]\nTitle=Angel Casado OGN-SGP test\nPeriodFrom=0\nPeriodTo=401521\nAvtoSaveFlight=True\nAvtoSaveTime=60\nAvtoPublishTime=-300\nTakeoffAlt=0m\nTaskPicWidth=600\nTaskPicHeight=400\nTaskPicCompression=90\nTaskPicBorder=12\nUtcOffset=1\nNeedLegs=False\nStrictName=False\nUseBinFiles=True\nCommentPrefix=1\n\n[Warnings]\nHighEnl=300\nAsViolate=True\nMinFinAlt=0m\nMaxFinAlt=10000m\nMaxStartAlt=0m\nMaxAlt=0m\nMaxAltCorr=50.0m\nAltTimeout=0\nStartGsp=0km/h\nFixRate=10\nValFailed=True\n\n[SearchPath]\n\\psf\Home\Desktop\Flights\ \n"

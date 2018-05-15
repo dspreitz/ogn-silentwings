@@ -28,7 +28,7 @@ def list_strepla_contests():
 
 
 def get_strepla_contest_body(competition_id):
-    contest_url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=info&cId=" + str(competition_id) + "&daysPeriod=700"
+    contest_url = "http://www.strepla.de/scs/ws/competition.ashx?cmd=info&cId=" + str(competition_id)
     # print(contest_url)
     r = requests.get(contest_url)
     # Test if contest is present
@@ -48,9 +48,6 @@ def get_strepla_contest_body(competition_id):
     location = Location(**parameters)
     contest.location = location
 
-    # To fake future StrePla comps until the API allows access as requested per e-mail
-    # competition_id = 496
-
     # Process contest class info
     contest_class_url = "http://www.strepla.de/scs/ws/compclass.ashx?cmd=overview&cid=" + str(competition_id)
     # print(contest_class_url)
@@ -67,12 +64,18 @@ def get_strepla_contest_body(competition_id):
 
         # Process pilots of class
         contestant_url = "http://www.strepla.de/scs/ws/pilot.ashx?cmd=competitors&cId=" + str(competition_id) + "&cc=" + str(contest_class_row['name'])
+        print(contestant_url)
         r = requests.get(contestant_url)
         contestant_data = json.loads(r.text.encode('utf-8'))
         if (len(contestant_data) == 0):
             print("Class name not recognized. Aborting.")
             return
 
+        # Check if we have access to the pilot info
+        if contestant_data['msg']:
+            print("=================================\nNo competitors for contest found, please check access rights. \nSkipping import of pilot info.\n=================================")
+            continue
+            
         for contestant_row in contestant_data:
             parameters = {'aircraft_model': contestant_row['glider_name'],
                           'aircraft_registration': contestant_row['glider_callsign'],
@@ -108,7 +111,7 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
             continue
 
         if int(all_task_data_item['state']) == 60:
-            print("Task neutralized for day " + all_task_data_item['date'] + ". Skipping.")
+            print(all_task_data_item['date'],": Task neutralized for day. Skipping.")
             continue
 
         task_url = "http://www.strepla.de/scs/ws/results.ashx?cmd=task&cID=" + str(competition_id) + "&idDay=" + str(all_task_data_item['idCD']) + "&activeTaskOnly=true"
@@ -119,7 +122,7 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
             break
 
         task_data = json.loads(r.text.encode('utf-8'))
-        print(task_data)
+        print("=================================\n",all_task_data_item['date'],"\n",task_data,"\n=================================")
         for task_data_item in task_data['tasks']:
             # print(task_data_item)
             parameters = {'result_status': all_task_data_item['state'],

@@ -201,6 +201,7 @@ def route_getcontestinfo():
 
     if 'date' in request.args:
         # return CUC file
+        print(contestname)
         print("create_cuc was called")
         return create_cuc(contestname, date)
     else:
