@@ -3,6 +3,9 @@ from app import db
 
 from datetime import timezone
 from app.model.contestant import Contestant
+from app.model.turnpoint import Turnpoint
+from _asyncio import Task
+from tests.test_soaringspot import turnpoints_document
 
 
 def create_active_contests_string():
@@ -36,6 +39,7 @@ def create_contest_info_string(contest_name_with_class_type):
     for contest in db.session.query(Contest):
         for contest_class in contest.classes:
             if contest.name.replace(" ", "").upper() == short_name and contest_class.type.replace("_", "").replace("-", "").upper() == contest_class_type:
+                # TODO: Understand this and possibly correct.
                 for task in contest.classes[0].tasks:
                     result_string += "{{date}}{0}{{/date}}".format(task.task_date.strftime("%Y%m%d"))
                     result_string += "{{task}}{0}{{/task}}".format(1)
@@ -64,19 +68,15 @@ def create_tracker_data(tracker_id):
 
 
 def create_cuc_pilots_block(contest_name_with_class_type):
-    from app.model import ContestClass
-    print(contest_name_with_class_type)
     contest_name = contest_name_with_class_type.partition("_")[0]
-    # short_name = contest_name.replace(" ", "").upper()
     contest_class_type = contest_name_with_class_type.partition("_")[2]
-    print(contest_class_type)
 
-    # TODO: Needs contest_name_with_class_type as input to find correct contestants per class
     result_list = list()
     result_list.append("[Pilots]")
 
     for contestant in db.session.query(Contestant):
-        print(contestant.contest_class.name.upper())
+        # TODO: If multiple contests are in db this will fail. Implement if for contest name
+        # print(contestant.contest_class.name.upper())
         if contestant.contest_class.name.upper() == contest_class_type:
             pilot = contestant.pilots[0]
             entry_dict = {'first_name': pilot.first_name,
@@ -86,19 +86,35 @@ def create_cuc_pilots_block(contest_name_with_class_type):
                           'aircraft_registration': contestant.aircraft_registration,
                           'contestant_number': contestant.contestant_number}
     
+            # TODO: Fix encoding so that umlaute are properly displayed in SWV
             entry = '"{first_name}","{last_name}",*0,"{live_track_id}","{aircraft_model}","{aircraft_registration}","{contestant_number}","",0,"",0,"",1,"",""'.format(**entry_dict)
             result_list.append(entry)
 
     result_list.append("\n[Starts]\n")
+    print("\n".join(result_list))
+    return "\n".join(result_list)
+
+def create_cuc_tp_block(contest_name_with_class_type):
+    contest_name = contest_name_with_class_type.partition("_")[0]
+    contest_class_type = contest_name_with_class_type.partition("_")[2]
+    # print(contest_class_type)
+
+    result_list = list()
+    for contest in db.session.query(Contest):
+        for contest_class in contest.classes:
+            if contest.name.replace(" ", "").upper() == contest_name and contest_class.type.replace("_", "").replace("-", "").upper() == contest_class_type:
+                last_task = contest_class.tasks[-1]
+                for turnpoint in last_task.turnpoints:
+                    result_list.append(turnpoint.c_igc())
+    
     # print("\n".join(result_list))
     return "\n".join(result_list)
 
 
 def create_cuc(contestname, date):
-    print(contestname,date)
     result_list = list()
     # Generate Header of CUC file
-    entry = "[Options]\nTitle=Angel Casado OGN-SGP test\nPeriodFrom=0\nPeriodTo=401521\nAvtoSaveFlight=True\nAvtoSaveTime=60\nAvtoPublishTime=-300\nTakeoffAlt=0m\nTaskPicWidth=600\nTaskPicHeight=400\nTaskPicCompression=90\nTaskPicBorder=12\nUtcOffset=1\nNeedLegs=False\nStrictName=False\nUseBinFiles=True\nCommentPrefix=1\n\n[Warnings]\nHighEnl=300\nAsViolate=True\nMinFinAlt=0m\nMaxFinAlt=10000m\nMaxStartAlt=0m\nMaxAlt=0m\nMaxAltCorr=50.0m\nAltTimeout=0\nStartGsp=0km/h\nFixRate=10\nValFailed=True\n\n[SearchPath]\n\\psf\Home\Desktop\Flights\ \n"
+    entry = "[Options]\nTitle=OGN-Silent Wings test\nPeriodFrom=0\nPeriodTo=401521\nAvtoSaveFlight=True\nAvtoSaveTime=60\nAvtoPublishTime=-300\nTakeoffAlt=0m\nTaskPicWidth=600\nTaskPicHeight=400\nTaskPicCompression=90\nTaskPicBorder=12\nUtcOffset=1\nNeedLegs=False\nStrictName=False\nUseBinFiles=True\nCommentPrefix=1\n\n[Warnings]\nHighEnl=300\nAsViolate=True\nMinFinAlt=0m\nMaxFinAlt=10000m\nMaxStartAlt=0m\nMaxAlt=0m\nMaxAltCorr=50.0m\nAltTimeout=0\nStartGsp=0km/h\nFixRate=10\nValFailed=True\n\n[SearchPath]\n\\psf\Home\Desktop\Flights\ \n"
     result_list.append(entry)
 
     # Generate [Pilot] Block of CUC file
@@ -110,14 +126,15 @@ def create_cuc(contestname, date):
     result_list.append(entry)
 
     # Generate Footer of CUC file
-    entry = "V,HighEnl=300,AsViolate=True,MinFinAlt=0m,MaxFinAlt=10000m,MaxStartAlt=0m,MaxAlt=0m,MaxAltCorr=50.0m,AltTimeout=0,StartGsp=0km/h,FixRate=10,ValFailed=True\nC301299000000301299000003\n"
+    entry = "V,HighEnl=300,AsViolate=True,MinFinAlt=0m,MaxFinAlt=10000m,MaxStartAlt=0m,MaxAlt=0m,MaxAltCorr=50.0m,AltTimeout=0,StartGsp=0km/h,FixRate=10,ValFailed=True\nC301299000000301299000003"
     result_list.append(entry)
-    result_list.append("C4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\nC4234110N00044360WSanta Cilia - LECI\nC4206290N00028590EBenabarre\nC4203020N00117320EOliana\nC4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\n")
+    result_list.append(create_cuc_tp_block(contestname))
+    # result_list.append("C4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\nC4234110N00044360WSanta Cilia - LECI\nC4206290N00028590EBenabarre\nC4203020N00117320EOliana\nC4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\n")
     result_list.append("TSK,WpDis=True,MinDis=True,NearDis=0.5km,NearAlt=200.0m,MinFinAlt=0.0km\nXTest day")
     entry = 'E000,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE001,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE002,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE003,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE004,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE005,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\n'
     result_list.append(entry)
 
-    print("=========================")
-    print("\n".join(result_list))
-    print("=========================")
+    # print("=========================")
+    # print("\n".join(result_list))
+    # print("=========================")
     return "\n".join(result_list)

@@ -52,7 +52,7 @@ class Turnpoint(db.Model):
             EW = 'W'
 
         # C4223150N00151500ELa Cerdanya
-        result = 'C{latdeg:02d}{latmin:2.3f}{ns:1s}{longdeg:02d}{longmin:2.3f}{ew:1s}{tpname}\n'.format(latdeg=abs(int(math.floor(self.latitude))), latmin=latminutes, ns=NS, longdeg=abs(int(math.floor(self.longitude))), longmin=longminutes, ew=EW, tpname=self.name).replace('.', '')
+        result = 'C{latdeg:02d}{latmin:2.3f}{ns:1s}{longdeg:02d}{longmin:2.3f}{ew:1s}{tpname}'.format(latdeg=abs(int(math.floor(self.latitude))), latmin=latminutes, ns=NS, longdeg=abs(int(math.floor(self.longitude))), longmin=longminutes, ew=EW, tpname=self.name).replace('.', '')
         return result
 
     def __repr__(self):

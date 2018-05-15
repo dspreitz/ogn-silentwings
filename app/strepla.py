@@ -72,7 +72,7 @@ def get_strepla_contest_body(competition_id):
             return
 
         # Check if we have access to the pilot info
-        if contestant_data['msg']:
+        if 'msg' in contestant_data:
             print("=================================\nNo competitors for contest found, please check access rights. \nSkipping import of pilot info.\n=================================")
             continue
             
@@ -86,6 +86,7 @@ def get_strepla_contest_body(competition_id):
             contestant = Contestant(**parameters)
             contestant.contest_class = contest_class
 
+            # TODO: This does not properly break down in firstname and last name
             parameters = {'first_name': contestant_row['name'].rsplit(',', 1)[0],
                           'last_name': contestant_row['name'].split(',', 1)[0],
                           'nationality': contestant_row['country']}
