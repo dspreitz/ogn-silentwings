@@ -200,6 +200,15 @@ def logfile_to_beacons(logfile, reference_date=date(2015, 1, 1)):
 def gist_writer(task):
     from github3 import login
     from flasky import app
+    import json
+    from pathlib import Path
+    
+    if Path('GIST_dict.json').is_file():
+        with open('GIST_dict.json', 'r') as gist_file:
+            gist_dict = json.loads(gist_file.read())  # use `json.loads` to do the reverse
+    
+    else:
+        gist_dict = dict()
 
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
@@ -216,6 +225,12 @@ def gist_writer(task):
     # Generate the gist comment
     gist_comment = task.contest_class.contest.name.replace(" ", "").upper() + "_" + task.contest_class.name.replace("_", "").replace("-", "").upper()
 
+    if gist_comment in gist_dict and gist_id is None:
+        gist_id = gist_dict[gist_comment]
+        print("Read Gist_ID from file.")
+    else:
+        print("No Gist_ID found in file.")
+    
     files = {}
 
     # files_filter deactivated to prevent over writing of filter files in github as most contest organizers fail to maintain
@@ -240,7 +255,8 @@ def gist_writer(task):
         # No Gist-ID provided, creating a new gist
         print('No Gist-ID provided, creating a new Gist.')
         gist = gh.create_gist(gist_comment, files, public=True)
-
+        gist_dict[gist_comment] = gist.id
+        
     else:
         print("Gist-ID provided, modifying an existing gist.")
         # Get all gits ID of authenticated github user to check if gist ID is valid
@@ -248,6 +264,8 @@ def gist_writer(task):
         if gist_id in gists:
             print("The GIST-ID you provided is valid.")
             gist = gh.gist(gist_id)
+            if gist_comment not in gist_dict:
+                gist_dict[gist_comment] = gist.id
 
         else:
             # Gist-ID is not valid
@@ -255,6 +273,11 @@ def gist_writer(task):
 
         # Edit the gist
         gist.edit(gist_comment, files)
+    
+    # Write GIST-IDs to file
+    with open('GIST_dict.json', 'w') as file:
+        print(gist_dict)
+        file.write(json.dumps(gist_dict))
 
     contestants_filter_gist_url = "https://gist.github.com/" + str(gist.owner) + "/" + str(gist.id) + "/raw/filter"
     print("You filter Gist address is:  {}".format(contestants_filter_gist_url))
