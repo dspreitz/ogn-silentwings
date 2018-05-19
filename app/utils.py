@@ -212,6 +212,7 @@ def gist_writer(task):
 
     # Provide login to Github via API token
     gh = login(token=app.config['API_TOKEN'])
+    # TODO: Check if this was successfull or exit gracefully.
 
     gh_ratelimit = gh.ratelimit_remaining
     if gh_ratelimit <= 50:
