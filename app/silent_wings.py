@@ -4,7 +4,7 @@ from app import db
 from datetime import timezone
 from app.model.contestant import Contestant
 from app.model.turnpoint import Turnpoint
-from _asyncio import Task
+# from _asyncio import Task
 from tests.test_soaringspot import turnpoints_document
 
 
