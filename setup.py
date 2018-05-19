@@ -43,7 +43,7 @@ setup(
         'ogn-client==0.8.2',
         'aerofiles==0.4.1',
         'github3.py==1.1.0',
-        'flarmnet.py==0.1'
+        'flarmnet==0.1'
     ],
     extras_require={
         'dev': [
