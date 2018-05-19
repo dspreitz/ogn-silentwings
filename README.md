@@ -11,6 +11,8 @@ Additionally, it can request contest information (participants and tasks) from S
 - generate filter and task files for glidertracker.org
 - support the data output to Silentwings
 
+Note: Presently, only Python3.6 is supported.
+
 
 ## Installation and Setup
 1. Checkout the repository
