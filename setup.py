@@ -27,7 +27,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.6',  # Only Python 3.6 works really.
     ],
     keywords='gliding ogn silent wings',
     packages=['ogn.{}'.format(package) for package in find_packages(where='ogn')],
@@ -42,7 +42,7 @@ setup(
         'hal-codec==1.0.2',
         'ogn-client==0.8.2',
         'aerofiles==0.4.1',
-        'github3.py==1.1.0',
+        'github3.py==1.1.0',  # TODO: Update once the fix for issue #845 is implemented. 
         'flarmnet==0.1.2'
     ],
     extras_require={
