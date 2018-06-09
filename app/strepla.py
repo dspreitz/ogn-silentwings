@@ -86,9 +86,8 @@ def get_strepla_contest_body(competition_id):
             contestant = Contestant(**parameters)
             contestant.contest_class = contest_class
 
-            # TODO: This does not properly break down in firstname and last name
-            parameters = {'first_name': contestant_row['name'].rsplit(',', 1)[0],
-                          'last_name': contestant_row['name'].split(',', 1)[0],
+            parameters = {'first_name': contestant_row['name'].rsplit(',', 1)[1].replace(' ',""),
+                          'last_name': contestant_row['name'].rsplit(',', 1)[0].replace(' ',""),
                           'nationality': contestant_row['country']}
             pilot = Pilot(**parameters)
             pilot.contestant = contestant

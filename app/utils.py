@@ -56,6 +56,15 @@ def ddb_import():
 
         if Path("data.fln").is_file():
             with open('data.fln', 'r') as ffile:
+                reader = flarmnet.Reader(ffile)
+                for record in reader.read():
+                    # print(record.id, record.registration)
+                    # If FlarmNet-ID is not already in OGN DDB amend
+                    if record.id not in ddb_entries:
+                        # print("Adding entry from Flarmnet DB: ",record.id,record.registration)
+                        ddb_entries[record.id] = record.registration
+                
+                """
                 try:
                     reader = flarmnet.Reader(ffile)
                     for record in reader.read():
@@ -66,7 +75,7 @@ def ddb_import():
                             ddb_entries[record.id] = record.registration
                 except:
                     print("Could not process Flarmnet data")
-
+                """
         else:
             print("No FlarmNet file found.")
 

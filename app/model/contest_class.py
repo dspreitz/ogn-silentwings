@@ -20,15 +20,16 @@ class ContestClass(db.Model):
     # Generates a filter file for glidertracker.org
     def gt_filter(self):
         result_list = list()
-        result_list.append("ID,CALL,CN,TYPE,HANDICAP")
+        result_list.append("ID,CALL,CN,TYPE,HANDICAP,NAME")
         for contestant in self.contestants:
             parameters = {'live_track_id': contestant.live_track_id,
                           'aircraft_registration': contestant.aircraft_registration,
                           'contestant_number': contestant.contestant_number,
                           'aircraft_model': contestant.aircraft_model,
-                          'handicap': contestant.handicap}
+                          'handicap': contestant.handicap,
+                          'complete_name': str(contestant.pilots[0].first_name + " " + contestant.pilots[0].last_name)}
 
-            entry = '"{live_track_id}","{aircraft_registration}","{contestant_number}","{aircraft_model}","{handicap}"'.format(**parameters).replace('"', "")
+            entry = '"{live_track_id}","{aircraft_registration}","{contestant_number}","{aircraft_model}","{handicap}","{complete_name}"'.format(**parameters).replace('"', "")
             result_list.append(entry)
 
         return "\n".join(result_list)

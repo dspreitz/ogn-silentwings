@@ -17,7 +17,7 @@ class Pilot(db.Model):
     # Relations
     contestant_id = Column(Integer, ForeignKey('contestants.id', ondelete='SET NULL'))
     contestant = relationship('Contestant', foreign_keys=[contestant_id], backref='pilots')
-
+    
     def __repr__(self):
         return "<Pilot %s: %s,%s,%s,%s,%s,%s>" % (
             self.id,
