@@ -123,7 +123,15 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
 
         task_data = json.loads(r.text.encode('utf-8'))
         print("=================================\n",all_task_data_item['date'],"\n",task_data,"\n=================================")
+        
         for task_data_item in task_data['tasks']:
+            # print(task_data['activeTask'])
+            if int(task_data['activeTask']) != int(task_data_item['id']):
+                print('Task ID: ', task_data_item['id'], '- This is a passive task, Skipping..')
+                continue
+            else:
+                print('Task ID: ', task_data_item['id'], '- This is an active task. Processing it.')
+            
             # print(task_data_item)
             parameters = {'result_status': all_task_data_item['state'],
                           'task_date': datetime.strptime(all_task_data_item['date'], "%Y-%m-%dT%H:%M:%S"),
