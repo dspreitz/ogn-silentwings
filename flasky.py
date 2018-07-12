@@ -1,4 +1,5 @@
 import os
+import time, datetime
 from app import create_app, db
 from app.model import Contest, ContestClass, Contestant, Pilot, Task, Beacon,\
     contest_class
@@ -8,8 +9,8 @@ from flask import request
 from app.silent_wings import create_active_contests_string, create_contest_info_string, create_cuc
 from app.soaringspot import get_soaringspot_contests
 from app.strepla import list_strepla_contests
-from app.utils import logfile_to_beacons, gist_writer
-from datetime import date
+from app.utils import logfile_to_beacons, gist_writer, gettrackerdata_GT
+# from datetime import date
 from app.glidertracker import glidertracker_contests
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -219,16 +220,18 @@ def route_gettrackerdata():
     # compression=<none | gzip>
     # querytype = request.args.get('querytype', type=str)
     # contestname = request.args.get('contestname', type=str)
-    # trackerid = request.args.get('trackerid', type=str)
+    trackerid = request.args.get('trackerid', type=str)
     # username = request.args.get('username', type=str)
     # cpassword = request.args.get('cpassword', type=str)
-    # starttime = request.args.get('starttime', type=str)
-    # endtime = request.args.get('endtime', type=str)
+    starttime = request.args.get('starttime', type=str)
+    endtime = request.args.get('endtime', type=str)
     # compression = request.args.get('compression', type=str)
 
     # GET /gettrackerdata.php?querytype=getintfixes&contestname=SOARINGSPOT3DTRACKINGINTERFACE%5f18METER&trackerid=FLRDDE1FC&username=ogn&cpassword=ecbad38d0b5a3cf6482e661028b2c60c&starttime=20180303000001&endtime=20180303235959&compression=gzip HTTP/1.0
+    
     print("gettrackerdata was called!")
-    return ""
+    
+    return gettrackerdata_GT(trackerid,starttime,endtime)
 
 
 @app.route("/getprotocolinfo.php")
