@@ -17,13 +17,13 @@ Note: Presently, only Python3.6 is supported.
 ## Installation and Setup
 1. Checkout the repository
 
-   ```
+   ```bash
    git clone https://github.com/Meisterschueler/ogn-silentwings.git
    ```
 
 2. Install python requirements
 
-    ```
+    ```bash
     pip install -r requirements.txt
     ```
 
@@ -36,7 +36,7 @@ GIT_API_TOKEN=227fc741d690d82a12839f43792205174f48fe3a
 ## StrePla Workflow for 2D live-Tracking with GliderTracker.org
 
 1. Enter ogn-silentwings directory
-``
+```
 cd ogn-silentwings
 ```
 
