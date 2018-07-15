@@ -27,11 +27,57 @@ Note: Presently, only Python3.6 is supported.
     pip install -r requirements.txt
     ```
 
-3. Modify flarmnet according to:
-https://github.com/Turbo87/flarmnet.py/commit/2b74d03200bd82713dd262a3ff7d2cf6cc8c76f2
-
-4. Mofiy github3 according to:
+3. Mofiy github3 according to:
 https://github.com/sigmavirus24/github3.py/issues/845
+
+4. Provide your GIT API Token from GitHub to enable ogn-silentwings to write GIST files
+GIT_API_TOKEN=227fc741d690d82a12839f43792205174f48fe3a
+
+## StrePla Workflow for 2D live-Tracking with GliderTracker.org
+
+1. Enter ogn-silentwings directory
+``
+cd ogn-silentwings
+```
+
+2. Activate your virtual environment and export flasky into environment
+```
+source venv/bin/activate && export FLASK_APP=flasky.py
+```
+
+3. Remove exisiting database files
+```
+rm data*
+```
+
+4. Create new empty database
+```
+flask create_all
+```
+
+5. Display and overview of all available StrePla contests
+```
+flask import_strepla
+```
+
+6. Import a selected contest
+```
+flask import_strepla --cID 514
+```
+
+7. Display all tasks (of all classes) of the selected contest
+```
+flask glidertracker_task
+```
+
+8. Generate participant filter and task file for selected task and upload it to GIST and provide complete 2D tracking URL
+(Repeat this step for all contest classes)
+```
+flask glidertracker_task --tID 35
+```
+
+
+
 
 
 
