@@ -31,7 +31,12 @@ Note: Presently, only Python3.6 is supported.
 https://github.com/sigmavirus24/github3.py/issues/845
 
 4. Provide your GIT API Token from GitHub to enable ogn-silentwings to write GIST files
-GIT_API_TOKEN=227fc741d690d82a12839f43792205174f48fe3a
+GitHub.com GISTs are used to publish the task and filter file online, so that GliderTracker.org can access theses files. To generate a GitHub API token, create a GitHub user account, click on account --> settings --> Developer Settings --> Personal access tokens. Give the token a name under token description (e.g. ogn-silentwings) and check only the gist (Create gist) checkbox. Hit generate token and then copy the token and save it in the ~/.bash_profile file.
+
+Add following line to your .bash_profile
+```bash
+export GIT_API_TOKEN="_your_token_here_"
+```
 
 ## StrePla Workflow for 2D live-Tracking with GliderTracker.org
 
