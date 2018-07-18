@@ -18,7 +18,7 @@ Note: Presently, only Python3.6 is supported.
 1. Checkout the repository
 
    ```bash
-   git clone https://github.com/Meisterschueler/ogn-silentwings.git
+   git clone https://github.com/dspreitz/ogn-silentwings.git
    ```
 
    It is recommended, that you install ogn-silentwings requirements in a virtual environment
