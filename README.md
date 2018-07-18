@@ -21,6 +21,13 @@ Note: Presently, only Python3.6 is supported.
    git clone https://github.com/Meisterschueler/ogn-silentwings.git
    ```
 
+   It is recommended, that you install ogn-silentwings requirements in a virtual environment
+   ```bash
+   python3 -m venv ./venv
+   source ./venv/bin/activate
+   ```
+
+
 2. Install python requirements
 
     ```bash
