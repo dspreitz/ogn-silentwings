@@ -7,7 +7,7 @@ def write_xcsoar_task(fp, task):
     params = {
         'type': get_task_type(task),
         'task_scored': 0,  # task.task_scored,
-        'aat_min_time': 0,  # task.aat_min_time,
+        'aat_min_time': task.task_duration,  # task.aat_min_time,
         'start_max_speed': 0,  # task.start_max_speed,
         'start_max_height': 0,  # task.start_max_height,
         'start_max_height_ref': 0,  # task.start_max_height_ref,
@@ -19,7 +19,8 @@ def write_xcsoar_task(fp, task):
         'homogeneous_tps': 0,  # task.homogeneous_tps,
         'is_closed': True,  # task.is_closed,
     }
-    print(params)
+    # print("Here are the task params")
+    # print(params)
 
     # Write <Task> tag
     with writer.write_task(**params):
@@ -58,14 +59,18 @@ def get_task_type(task):
         return 'FAIGoal'
     elif task.task_type == 'racing':
         return 'RT'
+    elif task.task_type == 'polygon':
+        return 'RT'
     elif task.task_type == 'aat':
+        return 'AAT'
+    elif task.task_type == 'assigned_area':
         return 'AAT'
     elif task.task_type == 'mixed':
         return 'Mixed'
     elif task.task_type == 'touring':
         return 'Touring'
 
-
+    
 def get_point_type(task, i):
     if i == 0:
         print("get_point_type: Start")
@@ -88,7 +93,8 @@ def get_observation_zone_params(turnpoint):
         if turnpoint.oz_line is True:
             print("Recognized Finish Line")
             params["type"] = "Line"
-            params["radius"] = int(turnpoint.oz_radius1) * 2
+            params["length"] = int(turnpoint.oz_radius1) * 2
+            # params["radius"] = int(turnpoint.oz_radius1) * 2
         else:
             print("Recognized Finish Cylinder")
             params["type"] = "Cylinder"
