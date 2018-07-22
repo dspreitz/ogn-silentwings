@@ -76,7 +76,8 @@ def get_soaringspot_contests(url, client_id, secret):
                 for contest_class_row in contest_row['classes']:
                     parameters = {'category': contest_class_row['category'],
                                   'type': contest_class_row['type'],
-                                  'name': contest_class_row['name']}
+                                  'name': contest_class_row['name'] if 'name' in contest_class_row else "",
+                                  }
                     contest_class = ContestClass(**parameters)
                     contest_class.contest = contest
 
