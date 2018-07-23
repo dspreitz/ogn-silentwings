@@ -310,7 +310,14 @@ def gist_writer(task):
 def gettrackerdata_GT(trackerid,s,e):
     from websocket import create_connection
     import time, datetime
-    ws = create_connection("ws://glidertracker.de:3389/")
+    
+    # Create connection to Glidertracker.de
+    ws = create_connection("wss://glidertracker.de:3389/")
+    
+    # Write header of result string
+    result = "{datadelay}0{/datadelay}\n"
+    
+    
     # print("Sending 'Hello, World'...")
     # ws.send("Hello, World")
     # print("Sent")
@@ -338,19 +345,17 @@ def gettrackerdata_GT(trackerid,s,e):
     # e = "20180709235959"
     # trackerid = "06DDDAA8"
     
+    # Format conversion of start and end time 
     start_time = int(time.mktime(datetime.datetime.strptime(s, "%Y%m%d%H%M%S").timetuple()))
     end_time = int(time.mktime(datetime.datetime.strptime(e, "%Y%m%d%H%M%S").timetuple()))
     
-     
     # TRACK?06DDDAA8|1531087201|1531123674 - works
     request = "TRACK?" + trackerid +"|" + str(start_time) + "|" + str(end_time) 
-    # print(request)
     ws.send(request)
     
-    result = "{datadelay}0{/datadelay}\n"
-    
-    # Glidertracker answer:
+    # Glidertracker example answer:
     # 'TRACK:06DDDAA8|51.391533/4.954583/102.0/2018-07-09T08:00:23Z|51.391449/4.954383/102.0/2018-07-09T08:00:34Z|51.391399/4.954150/105.0/2018-07-09T08:00:47Z|51.391335/4.953933/102.0/2018-07-09T08:00:59Z|51.391251/4.953633/102.0/2018-07-09T08:01:17Z|51.391216/4.953450/102.0/2018-07-09T08:01:32Z|51.391151/4.953183/98.0/2018-07-09T08:01:46Z|51.391151/4.953166/98.0/2018-07-09T08:01:47Z|51.391102/4.952883/98.0/2018-07-09T08:02:02Z|51.391048/4.952633/98.0/2018-07-09T08:02:15Z|51.391033/4.952300/98.0/2018-07-09T08:02:32Z|51.391167/4.951950/95.0/2018-07-09T08:02:53Z|51.391232/4.952066/95.0/2018-07-09T08:03:19Z|51.391216/4.952084/95.0/2018-07-09T08:03:59Z|51.391216/4.952084/95.0/2018-07-09T08:04:05Z|51.391232/4.952084/95.0/2018-07-09T08:04:27Z|51.391232/4.952100/95.0/2018-07-09T08:04:47Z|51.391216/4.952100/95.0/2018-07-09T08:05:08Z|51.391232/4.952100/95.0/2018-07-09T08:05:29Z|51.391216/4.952100/98.0/2018-07-09T08:05:49Z|51.391232/4.952100/102.0/2018-07-09T08:06:09Z|51.391216/4.952100/102.0/2018-07-09T08:06:29Z|51.391216/4.952100/98.0/2018-07-09T08:06:50Z|51.391216/4.952100/98.0/2018-07-09T08:06:51Z|51.391216/4.952100/98.0/2018-07-09T08:07:10Z|51.391216/4.952100/98.0/2018-07-09T08:07:19Z|51.391216/4.952084/95.0/2018-07-09T08:07:26Z|'
+    
     for string in ws.recv().split('|')[1:]:
         if len(string) > 0:
             lat = string.split('/')[0]
@@ -359,10 +364,47 @@ def gettrackerdata_GT(trackerid,s,e):
             zeit = time.mktime(datetime.datetime.strptime(string.split('/')[3], "%Y-%m-%dT%H:%M:%SZ").timetuple())
             # 51.391232 4.952100 102.0 2018-07-09T08:21:56Z
             result += str( ID + "," + datetime.datetime.fromtimestamp(int(zeit)).strftime('%Y%m%d%H%M%S') + "," + lat + "," + long + ","  + alt + ",1\n")
-            # print(result)
-    
+            
     print(result)
     
     ws.close()
     return result
+
+# Interface to get historical data from ogn-web-gateway (https://github.com/Turbo87/ogn-web-gateway)
+def gettrackerdata_OWG(trackerid,s,e):
+    import requests, time, datetime
+    start_time = int(time.mktime(datetime.datetime.strptime(s, "%Y%m%d%H%M%S").timetuple()))
+    end_time = int(time.mktime(datetime.datetime.strptime(e, "%Y%m%d%H%M%S").timetuple()))
+    
+    # Write header of result string
+    result = "{datadelay}0{/datadelay}\n"
+    
+    # Example url request to API
+    # https://ogn.fva.cloud/api/records/OGN354B61?before=1532367209&after=1532367019
+    # urlstring = 'https://ogn.fva.cloud/api/records/' + str(trackerid) + '?before=' + str(start_time) + '&after=' + str(end_time)
+    urlstring = 'https://ogn.fva.cloud/api/records/OGN354B61?before=1532380258&after=1532296801'
+    print(urlstring)
+    r = requests.get(url = urlstring)
+    # print(r.json())
+    
+    for fix in r.json():
+        lat = fix.split('|')[2]
+        long = fix.split('|')[1]
+        alt = str(100)
+        zeit = time.mktime(datetime.datetime.fromtimestamp(int(fix.split('|')[0])).timetuple())
+        result += str( trackerid + "," + datetime.datetime.fromtimestamp(int(zeit)).strftime('%Y%m%d%H%M%S') + "," + lat + "," + long + ","  + alt + ",1\n")
+            
+    # print(result)
+    
+    """
+    Silentwing result format
+    {datadelay}6{/datadelay}
+    1052,20061230045824,-34.60305,138.72063,49.0,0
+    1052,20061230045828,-34.60306,138.72067,48.0,0
+    <tracker id>,<timestamp>,<latitude>,<longitude>,<altitude>,<status>
+    """
+
+    
+    return result
+
 

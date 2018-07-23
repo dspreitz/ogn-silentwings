@@ -196,6 +196,7 @@ def get_strepla_class_tasks(competition_id, contest_class_name):
                 # print("=== Turnpoint ===")
                 # print(turnpoint.c_igc())
                 turnpoint.task = task
+                # TODO: Identify task type AAT somehow here
 
             # task.contest_class = contest_class
             # print(task)

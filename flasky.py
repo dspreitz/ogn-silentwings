@@ -9,7 +9,7 @@ from flask import request
 from app.silent_wings import create_active_contests_string, create_contest_info_string, create_cuc
 from app.soaringspot import get_soaringspot_contests
 from app.strepla import list_strepla_contests
-from app.utils import logfile_to_beacons, gist_writer, gettrackerdata_GT
+from app.utils import logfile_to_beacons, gist_writer, gettrackerdata_OWG
 # from datetime import date
 from app.glidertracker import glidertracker_contests
 
@@ -209,6 +209,7 @@ def route_getcontestinfo():
 
 @app.route("/gettrackerdata.php")
 def route_gettrackerdata():
+    import gzip
     # Parameters:
     # querytype=getintfixes
     # contestname=<contest name>
@@ -231,11 +232,14 @@ def route_gettrackerdata():
     
     print("gettrackerdata was called!")
     
-    return gettrackerdata_GT(trackerid,starttime,endtime)
+    # return gettrackerdata_GT(trackerid,starttime,endtime)
+    print(gzip.compress(gettrackerdata_OWG(trackerid,starttime,endtime).encode('utf-8'), compresslevel=9))
+    return gzip.compress(gettrackerdata_OWG(trackerid,starttime,endtime).encode('utf-8'), compresslevel=9)
 
 
 @app.route("/getprotocolinfo.php")
 def route_getprotocolinfo():
+    from datetime import date
     from time import time
     # username = request.args.get('username', type=str)
     # cpassword = request.args.get('cpassword', type=str)
