@@ -44,7 +44,7 @@ class ProductionConfig(Config):
 
     SOARINGSPOT_CLIENT_ID = os.environ.get('SOARINGSPOT_CLIENT_ID') or '2470_A!6LMHu8oxdHC8CFU8lxW.LyykzdgZjGTTXeTwU3'
     SOARINGSPOT_SECRET = os.environ.get('SOARINGSPOT_SECRET') or 'Tlfd3bDcmCV3AkNhZEygmTDXaLYH6APLvDokwjj9RilSvrkCFmLhxi331TPsrUH0'
-    SOARINGSPOT_BASE_URL = 'http://api.test.soaringspot.com/v1/'
+    SOARINGSPOT_BASE_URL = os.environ.get('SOARINGSPOT_BASE_URL') or 'http://api.soaringspot.com/v1/'
     # SOARINGSPOT_BASE_URL = 'http://api.soaringspot.com/v1/'
 
 
