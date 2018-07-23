@@ -96,8 +96,12 @@ flask glidertracker_task --tID 35
 ```
 
 
-
-
+Port FWDing on Mac
+```bash
+echo "
+rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 5000
+" | sudo pfctl -ef -
+```
 
 
 ## License
