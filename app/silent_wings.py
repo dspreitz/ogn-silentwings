@@ -94,24 +94,49 @@ def create_cuc_pilots_block(contest_name_with_class_type):
     print("\n".join(result_list))
     return "\n".join(result_list)
 
-def create_cuc_tp_block(contest_name_with_class_type):
+def create_cuc_tp_block(contest_name_with_class_type,date):
+    import datetime
     contest_name = contest_name_with_class_type.partition("_")[0]
     contest_class_type = contest_name_with_class_type.partition("_")[2]
     # print(contest_class_type)
-
+    n = 0
     result_list = list()
     for contest in db.session.query(Contest):
         for contest_class in contest.classes:
             if contest.name.replace(" ", "").upper() == contest_name and contest_class.type.replace("_", "").replace("-", "").upper() == contest_class_type:
                 last_task = contest_class.tasks[-1]
                 for turnpoint in last_task.turnpoints:
-                    result_list.append(turnpoint.c_igc())
+                    entry = turnpoint.c_igc()
+                    result_list.append(entry)
+                    
+                    # Repeat first TP twice - This is is the start Point
+                    if n == 0:
+                        result_list.append(entry)
+                    
+                    n += 1
     
-    # print("\n".join(result_list))
-    return "\n".join(result_list)
+    # Write the last line twice - This is the finish point
+    result_list.append(entry)
+    
+    
+    # Definition of the IGC task file description
+    # C D D M M Y Y H H M M S S F D F M F Y I I I I T T T E X T S T R I N G CR LF
+    # C 3 0 1 2 9 9 0 0 0 0 0 0 3 0 1 2 9 9 0 0 0 0 0 3
+    # Description          Size            Element            Remarks
+    # Date                 6 bytes         DDMMYY             Valid characters 0-9
+    # Time                 6 bytes         HHMMSS             Valid characters 0-9
+    # Flight Date          6 bytes         FDFMFY             Valid characters 0-9
+    # Task ID              4 bytes         IIII               Valid characters 0-9
+    # of Task TPs          2 bytes         TT                 Valid characters 0-9
+    
+    # entry = "C301299000000301299000003"
+    # Header line of IGC task file description is ignored by Silent Wings Viewer
+    entry = "C" + date[6:8] + date[4:6] + date[2:4] + "000000" + date[6:8] + date[4:6] + date[2:4] + "0001" + str(n-1).zfill(2) + "\n"
+    return entry + "\n".join(result_list)
 
 
 def create_cuc(contestname, date):
+    # import datetime
     result_list = list()
     # Generate Header of CUC file
     entry = "[Options]\nTitle=OGN-Silent Wings test\nPeriodFrom=0\nPeriodTo=401521\nAvtoSaveFlight=True\nAvtoSaveTime=60\nAvtoPublishTime=-300\nTakeoffAlt=0m\nTaskPicWidth=600\nTaskPicHeight=400\nTaskPicCompression=90\nTaskPicBorder=12\nUtcOffset=1\nNeedLegs=False\nStrictName=False\nUseBinFiles=True\nCommentPrefix=1\n\n[Warnings]\nHighEnl=300\nAsViolate=True\nMinFinAlt=0m\nMaxFinAlt=10000m\nMaxStartAlt=0m\nMaxAlt=0m\nMaxAltCorr=50.0m\nAltTimeout=0\nStartGsp=0km/h\nFixRate=10\nValFailed=True\n\n[SearchPath]\n\\psf\Home\Desktop\Flights\ \n"
@@ -126,15 +151,16 @@ def create_cuc(contestname, date):
     result_list.append(entry)
 
     # Generate Footer of CUC file
-    entry = "V,HighEnl=300,AsViolate=True,MinFinAlt=0m,MaxFinAlt=10000m,MaxStartAlt=0m,MaxAlt=0m,MaxAltCorr=50.0m,AltTimeout=0,StartGsp=0km/h,FixRate=10,ValFailed=True\nC301299000000301299000003"
+    entry = "V,HighEnl=300,AsViolate=True,MinFinAlt=0m,MaxFinAlt=10000m,MaxStartAlt=0m,MaxAlt=0m,MaxAltCorr=50.0m,AltTimeout=0,StartGsp=0km/h,FixRate=10,ValFailed=True"
     result_list.append(entry)
-    result_list.append(create_cuc_tp_block(contestname))
+    
+    result_list.append(create_cuc_tp_block(contestname,date))
     # result_list.append("C4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\nC4234110N00044360WSanta Cilia - LECI\nC4206290N00028590EBenabarre\nC4203020N00117320EOliana\nC4223150N00151500ELa Cerdanya - LECD\nC4223150N00151500ELa Cerdanya - LECD\n")
     result_list.append("TSK,WpDis=True,MinDis=True,NearDis=0.5km,NearAlt=200.0m,MinFinAlt=0.0km\nXTest day")
     entry = 'E000,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE001,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE002,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE003,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE004,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\nE005,0,,,0,0,-1,-1,-1,-1,0,0,-1,-1,0,0,-1,-1,0,0,"",-1,-1,"",-1,,,,,,\n'
     result_list.append(entry)
 
-    # print("=========================")
-    # print("\n".join(result_list))
-    # print("=========================")
+    print("=========================")
+    print("\n".join(result_list))
+    print("=========================")
     return "\n".join(result_list)

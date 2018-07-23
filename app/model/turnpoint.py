@@ -40,7 +40,7 @@ class Turnpoint(db.Model):
 
         latminutes = self.latitude % 1.0 * 60
         longminutes = self.longitude % 1.0 * 60
-
+        
         if self.latitude >= 0:
             NS = 'N'
         else:
@@ -50,9 +50,12 @@ class Turnpoint(db.Model):
             EW = 'E'
         else:
             EW = 'W'
-
-        # C4223150N00151500ELa Cerdanya
-        result = 'C{latdeg:02d}{latmin:2.3f}{ns:1s}{longdeg:02d}{longmin:2.3f}{ew:1s}{tpname}'.format(latdeg=abs(int(math.floor(self.latitude))), latmin=latminutes, ns=NS, longdeg=abs(int(math.floor(self.longitude))), longmin=longminutes, ew=EW, tpname=self.name).replace('.', '')
+         
+        # IGC file task declaration point definition and example
+        # C D D M M M M M N D D D M M M M M E T E X T S T R I N G CR LF
+        # C 5 0 0 2 8 4 9 N 0 1 1 4 0 0 0 0 E 024BBE
+                
+        result = 'C{latdeg:02d}{latmin:05d}{ns:1s}{longdeg:03d}{longmin:05d}{ew:1s}{tpname}'.format(latdeg=abs(int(math.floor(self.latitude))), latmin=int(latminutes * 1000), ns=NS, longdeg=abs(int(math.floor(self.longitude))), longmin=int(longminutes * 1000), ew=EW, tpname=self.name).replace('.', '').replace(' ', '')
         return result
 
     def __repr__(self):
