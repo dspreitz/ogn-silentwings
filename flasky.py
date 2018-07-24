@@ -16,7 +16,6 @@ from app.glidertracker import glidertracker_contests
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
 
-
 @app.shell_context_processor
 def make_shell_context():
     return dict(app=app, db=db,
@@ -210,6 +209,7 @@ def route_getcontestinfo():
 @app.route("/gettrackerdata.php")
 def route_gettrackerdata():
     import gzip
+    from flask import Response
     # Parameters:
     # querytype=getintfixes
     # contestname=<contest name>
@@ -234,10 +234,15 @@ def route_gettrackerdata():
     
     # return gettrackerdata_GT(trackerid,starttime,endtime)
     # print(zlib.compress(gettrackerdata_OWG(trackerid,starttime,endtime), -1))
+    
+    trackerdata = gettrackerdata_OWG(trackerid,starttime,endtime)
+    print(trackerdata)
+    
     if compression == "gzip":
-        return gzip.compress(gettrackerdata_OWG(trackerid,starttime,endtime).encode('utf-8'))
+        return Response(gzip.compress(trackerdata.encode('utf-8'),compresslevel=-1),mimetype='application/gzip')
+        # return trackerdata
     else:
-        return gettrackerdata_OWG(trackerid,starttime,endtime)
+        return trackerdata
 
 
 @app.route("/getprotocolinfo.php")

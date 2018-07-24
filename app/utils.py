@@ -390,9 +390,9 @@ def gettrackerdata_OWG(trackerid,s,e):
     for fix in r.json():
         lat = fix.split('|')[2]
         long = fix.split('|')[1]
-        alt = str(100)
+        alt = 100.0
         zeit = time.mktime(datetime.datetime.fromtimestamp(int(fix.split('|')[0])).timetuple())
-        result += str( trackerid + "," + datetime.datetime.fromtimestamp(int(zeit)).strftime('%Y%m%d%H%M%S') + "," + lat + "," + long + ","  + alt + ",1\n")
+        result += str( trackerid + "," + datetime.datetime.fromtimestamp(int(zeit)).strftime('%Y%m%d%H%M%S') + "," + lat + "," + long + ","  + str(alt) + ",1\n")
             
     # print(result)
     
@@ -403,7 +403,8 @@ def gettrackerdata_OWG(trackerid,s,e):
     1052,20061230045828,-34.60306,138.72067,48.0,0
     <tracker id>,<timestamp>,<latitude>,<longitude>,<altitude>,<status>
     """
-
+    # XXXXXX,2018 07 23 20 50 12,48.747850,11.452717,100,1
+    # 1052,  2006 12 30 04 58 28,-34.60306,138.72067,48.0,0
     
     return result
 
