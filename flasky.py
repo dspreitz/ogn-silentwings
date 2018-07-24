@@ -226,15 +226,18 @@ def route_gettrackerdata():
     # cpassword = request.args.get('cpassword', type=str)
     starttime = request.args.get('starttime', type=str)
     endtime = request.args.get('endtime', type=str)
-    # compression = request.args.get('compression', type=str)
+    compression = request.args.get('compression', type=str)
 
     # GET /gettrackerdata.php?querytype=getintfixes&contestname=SOARINGSPOT3DTRACKINGINTERFACE%5f18METER&trackerid=FLRDDE1FC&username=ogn&cpassword=ecbad38d0b5a3cf6482e661028b2c60c&starttime=20180303000001&endtime=20180303235959&compression=gzip HTTP/1.0
     
     print("gettrackerdata was called!")
     
     # return gettrackerdata_GT(trackerid,starttime,endtime)
-    print(gzip.compress(gettrackerdata_OWG(trackerid,starttime,endtime).encode('utf-8'), compresslevel=9))
-    return gzip.compress(gettrackerdata_OWG(trackerid,starttime,endtime).encode('utf-8'), compresslevel=9)
+    # print(zlib.compress(gettrackerdata_OWG(trackerid,starttime,endtime), -1))
+    if compression == "gzip":
+        return gzip.compress(gettrackerdata_OWG(trackerid,starttime,endtime).encode('utf-8'))
+    else:
+        return gettrackerdata_OWG(trackerid,starttime,endtime)
 
 
 @app.route("/getprotocolinfo.php")
