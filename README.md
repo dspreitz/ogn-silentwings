@@ -34,8 +34,16 @@ Note: Presently, only Python3.6 is supported.
     pip install -r requirements.txt
     ```
 
-3. Mofiy github3 according to:
+3. Modify github3 according to:
 https://github.com/sigmavirus24/github3.py/issues/845
+
+Edit 3 lines in venv/lib/python3.6/site-packages/github3/gists/history.py into:
+```bash
+        self.additions = self.change_status['additions'] if 'additions' in self.change_status else 0
+        self.deletions = self.change_status['deletions'] if 'deletions' in self.change_status else 0
+        self.total = self.change_status['total'] if 'total' in self.change_status else 0
+```
+
 
 4. Provide your GIT API Token from GitHub to enable ogn-silentwings to write GIST files
 GitHub.com GISTs are used to publish the task and filter file online, so that GliderTracker.org can access theses files. To generate a GitHub API token, create a GitHub user account, click on account --> settings --> Developer Settings --> Personal access tokens. Give the token a name under token description (e.g. ogn-silentwings) and check only the gist (Create gist) checkbox. Hit generate token and then copy the token and save it in the ~/.bash_profile file.
@@ -64,7 +72,7 @@ cd ogn-silentwings
 source venv/bin/activate && export FLASK_APP=flasky.py
 ```
 
-3. Remove exisiting database files
+3. Remove existing database files
 ```
 rm data*
 ```
