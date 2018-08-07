@@ -205,8 +205,19 @@ def route_getcontestinfo():
     else:
         return create_contest_info_string(contestname)
 
+def timing(f):
+    def wrap(*args):
+        time1 = time.time()
+        ret = f(*args)
+        time2 = time.time()
+        print('{:s} function took {:.3f} ms'.format(f.__name__, (time2-time1)*1000.0))
+
+        return ret
+    return wrap
+
 
 @app.route("/gettrackerdata.php")
+@timing
 def route_gettrackerdata():
     import gzip
     from flask import Response
@@ -229,7 +240,6 @@ def route_gettrackerdata():
     compression = request.args.get('compression', type=str)
 
     # GET /gettrackerdata.php?querytype=getintfixes&contestname=SOARINGSPOT3DTRACKINGINTERFACE%5f18METER&trackerid=FLRDDE1FC&username=ogn&cpassword=ecbad38d0b5a3cf6482e661028b2c60c&starttime=20180303000001&endtime=20180303235959&compression=gzip HTTP/1.0
-    
     print("gettrackerdata was called!")
     
     # return gettrackerdata_GT(trackerid,starttime,endtime)
@@ -237,11 +247,11 @@ def route_gettrackerdata():
     
     trackerdata = gettrackerdata_OWG(trackerid,starttime,endtime)
     print(trackerdata)
-    
     if compression == "gzip":
         return Response(gzip.compress(trackerdata.encode('utf-8'),compresslevel=-1),mimetype='application/gzip')
         # return trackerdata
     else:
+        # In SilentWings/data/v_options.dat modify 'vpos_use_compression = false' to turn compression off
         return trackerdata
 
 
@@ -252,8 +262,9 @@ def route_getprotocolinfo():
     # username = request.args.get('username', type=str)
     # cpassword = request.args.get('cpassword', type=str)
     # {version}1.3{/version}{date}20080811{/date}{time}1218457469{/time}
-    return "{version}1.3{/version}{date}" + date.today().strftime("%Y%m%d") + "{/date}{time}" + str(int(time())) + "{/time}"
-
+    protocol_info = "{version}1.3{/version}{date}" + date.today().strftime("%Y%m%d") + "{/date}{time}" + str(int(time())) + "{/time}"
+    print(protocol_info)
+    return protocol_info
 
 #########################
 # Following Sections provides the Silent Wings Studio interface

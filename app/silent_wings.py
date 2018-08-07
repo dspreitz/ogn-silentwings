@@ -16,7 +16,7 @@ def create_active_contests_string():
             long_name = contest.name + " " + contest_class.type
             result_string += "{{contestname}}{0}{{/contestname}}".format(short_name)
             result_string += "{{contestdisplayname}}{0}{{/contestdisplayname}}".format(long_name)
-            result_string += "{{datadelay}}{0}{{/datadelay}}".format(15)
+            result_string += "{{datadelay}}{0}{{/datadelay}}".format(1)
             result_string += "{{utcoffset}}{0}{{/utcoffset}}".format("+01:00")
             result_string += "{{countrycode}}{0}{{/countrycode}}".format(contest.country)
             result_string += "{{site}}{0}{{/site}}".format(contest.location.name)
@@ -51,7 +51,7 @@ def create_contest_info_string(contest_name_with_class_type):
 
 def create_tracker_data(tracker_id):
     result_list = list()
-    result_list.append("{datadelay}6{/datadelay}")
+    result_list.append("{datadelay}1{/datadelay}")
     query = db.session.query(Beacon) \
         .filter(Beacon.address == tracker_id) \
         .order_by(Beacon.timestamp)
@@ -68,6 +68,8 @@ def create_tracker_data(tracker_id):
 
 
 def create_cuc_pilots_block(contest_name_with_class_type):
+    import datetime
+    from app.utils import gettrackerdata_OWG
     contest_name = contest_name_with_class_type.partition("_")[0]
     contest_class_type = contest_name_with_class_type.partition("_")[2]
 
@@ -78,17 +80,28 @@ def create_cuc_pilots_block(contest_name_with_class_type):
         # TODO: If multiple contests are in db this will fail. Implement if for contest name
         # print(contestant.contest_class.name.upper())
         if contestant.contest_class.name.upper() == contest_class_type:
-            pilot = contestant.pilots[0]
-            entry_dict = {'first_name': pilot.first_name,
-                          'last_name': pilot.last_name,
-                          'live_track_id': contestant.live_track_id,
-                          'aircraft_model': contestant.aircraft_model,
-                          'aircraft_registration': contestant.aircraft_registration,
-                          'contestant_number': contestant.contestant_number}
-    
-            # TODO: Fix encoding so that umlaute are properly displayed in SWV
-            entry = '"{first_name}","{last_name}",*0,"{live_track_id}","{aircraft_model}","{aircraft_registration}","{contestant_number}","",0,"",0,"",1,"",""'.format(**entry_dict)
-            result_list.append(entry)
+            # Only use contestants where we have valid tracker id
+            if contestant.live_track_id != 'XXXXXX':
+                # TODO insert check here, that checks if we have OGN-Fixes for this ID
+                # %Y%m%d%H%M%S
+                start_time= datetime.date.today().strftime('%Y%m%d000001')
+                end_time = datetime.date.today().strftime('%Y%m%d235959')
+                # print(start_time, end_time)
+                if len(gettrackerdata_OWG(contestant.live_track_id,start_time,end_time).split('\n')) > 2:
+                    print("I have data for this ID")
+                    pilot = contestant.pilots[0]
+                    entry_dict = {'first_name': pilot.first_name,
+                                  'last_name': pilot.last_name,
+                                  'live_track_id': contestant.live_track_id,
+                                  'aircraft_model': contestant.aircraft_model,
+                                  'aircraft_registration': contestant.aircraft_registration,
+                                  'contestant_number': contestant.contestant_number}
+            
+                    # TODO: Fix encoding so that umlaute are properly displayed in SWV
+                    entry = '"{first_name}","{last_name}",*0,"{live_track_id}","{aircraft_model}","{aircraft_registration}","{contestant_number}","",0,"",0,"",1,"",""'.format(**entry_dict)
+                    result_list.append(entry)
+                else:
+                    print("No data for this ID")
 
     result_list.append("\n[Starts]\n")
     print("\n".join(result_list))

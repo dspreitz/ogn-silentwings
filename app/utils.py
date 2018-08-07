@@ -119,6 +119,7 @@ def ogn_check(aircraft_registration, live_track_id):
             try:
                 int(live_track_id[2:], 16)
                 # print("HEX check passed 8")
+                live_track_id = live_track_id[2:]
 
             except ValueError:
                 print(aircraft_registration, "The live_track_id provided has 8 digits and no valid last six digits: ", live_track_id)
@@ -315,7 +316,7 @@ def gettrackerdata_GT(trackerid,s,e):
     ws = create_connection("wss://glidertracker.de:3389/")
     
     # Write header of result string
-    result = "{datadelay}0{/datadelay}\n"
+    result = "{datadelay}1{/datadelay}\n"
     
     
     # print("Sending 'Hello, World'...")
@@ -335,7 +336,7 @@ def gettrackerdata_GT(trackerid,s,e):
     
     """
     Silentwing result format
-    {datadelay}6{/datadelay}
+    {datadelay}1{/datadelay}
     1052,20061230045824,-34.60305,138.72063,49.0,0
     1052,20061230045828,-34.60306,138.72067,48.0,0
     <tracker id>,<timestamp>,<latitude>,<longitude>,<altitude>,<status>
@@ -372,33 +373,44 @@ def gettrackerdata_GT(trackerid,s,e):
 
 # Interface to get historical data from ogn-web-gateway (https://github.com/Turbo87/ogn-web-gateway)
 def gettrackerdata_OWG(trackerid,s,e):
-    import requests, time, datetime
+    import time, datetime
     start_time = int(time.mktime(datetime.datetime.strptime(s, "%Y%m%d%H%M%S").timetuple()))
     end_time = int(time.mktime(datetime.datetime.strptime(e, "%Y%m%d%H%M%S").timetuple()))
     
     # Write header of result string
-    result = "{datadelay}0{/datadelay}\n"
+    result = "{datadelay}1{/datadelay}\n"
     
     # Example url request to API
     # https://ogn.fva.cloud/api/records/OGN354B61?before=1532367209&after=1532367019
-    # urlstring = 'https://ogn.fva.cloud/api/records/' + str(trackerid) + '?before=' + str(start_time) + '&after=' + str(end_time)
-    urlstring = 'https://ogn.fva.cloud/api/records/OGN354B61?before=1532380258&after=1532296801'
+    
+    if trackerid.startswith('DD'):
+        trackerid_mod = 'FLR' + trackerid
+    else:
+        print(trackerid)
+        trackerid_mod = trackerid
+    
+
+    urlstring = 'https://ogn.fva.cloud/api/records/' + str(trackerid_mod) + '?after=' + str(start_time) + '&before=' + str(end_time)
+    # urlstring = 'https://ogn.fva.cloud/api/records/FLRDDBB1B?after=' + str(start_time) + '&before=' + str(end_time)
+    # urlstring = 'https://ogn.fva.cloud/api/records/OGN354B61' # + '?before=1532725824' + '&after=1532643024'
     print(urlstring)
     r = requests.get(url = urlstring)
     # print(r.json())
     
-    for fix in r.json():
-        lat = fix.split('|')[2]
-        long = fix.split('|')[1]
-        alt = 100.0
-        zeit = time.mktime(datetime.datetime.fromtimestamp(int(fix.split('|')[0])).timetuple())
-        result += str( trackerid + "," + datetime.datetime.fromtimestamp(int(zeit)).strftime('%Y%m%d%H%M%S') + "," + lat + "," + long + ","  + str(alt) + ",1\n")
+    for tracker_id in r.json():
+        # print(r.json()[tracker_id])
+        for fix in r.json()[tracker_id]:
+            lat = fix.split('|')[2]
+            long = fix.split('|')[1]
+            alt = fix.split('|')[3]
+            zeit = time.mktime(datetime.datetime.fromtimestamp(int(fix.split('|')[0])).timetuple())
+            result += str( trackerid + "," + datetime.datetime.fromtimestamp(int(zeit)).strftime('%Y%m%d%H%M%S') + "," + lat + "," + long + ","  + str(alt) + ",1\n")
             
-    # print(result)
+    print("Number of Fixes for this request:" + str(len(result.split('\n'))))
     
     """
     Silentwing result format
-    {datadelay}6{/datadelay}
+    {datadelay}1{/datadelay}
     1052,20061230045824,-34.60305,138.72063,49.0,0
     1052,20061230045828,-34.60306,138.72067,48.0,0
     <tracker id>,<timestamp>,<latitude>,<longitude>,<altitude>,<status>
