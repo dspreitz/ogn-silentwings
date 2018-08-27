@@ -3,13 +3,18 @@ from unittest import mock
 from datetime import date
 
 from app import create_app, db
-from app.utils import process_beacon, logfile_to_beacons, ddb_import
+from app.utils import process_beacon, logfile_to_beacons, ddb_import, gettrackerdata_OWG
 from app.model import Beacon
 
 
 class ogn_ddb_response:
     # OGN DDB http://ddb.glidernet.org/download/
     text = "#DEVICE_TYPE,DEVICE_ID,AIRCRAFT_MODEL,REGISTRATION,CN,TRACKED,IDENTIFIED\n'F','000000','HPH 304CZ-17','OK-7777','KN','Y','Y'\n'O','000001','Paraglider','','','Y','Y'\n'F','000002','LS-6 18','OY-XRG','G2','Y','Y'\n'F','00000D','Ka-8','D-1749','W5','Y','Y'\n'F','0000FD','Taurus','F-JRDN','DN','Y','Y'\n'F','000114','','','','N','N'"
+
+class OWG_response:
+    # OGN DDB http://ddb.glidernet.org/download/
+    def json(self):
+        return '{"FLRDD989A":["1535353024|12.433884|47.727718|578","1535353026|12.433884|47.727718|578","1535353034|12.433884|47.727699|580","1535353037|12.433884|47.727699|578","1535353040|12.433867|47.727718|580"]}'
 
 
 class TestDB(unittest.TestCase):
@@ -64,6 +69,18 @@ class TestDB(unittest.TestCase):
         ddb_entries = ddb_import()
         self.assertEqual(len(ddb_entries), 6, "Pass")
 
+    # Create class for the mock?
+    @mock.patch('app.utils.requests')
+    def test_gettrackerdata_OWG(self, requests_mock):
+        requests_mock.get.side_effect = [OWG_response]
+        
+        trackerid = "DD989A"
+        s = "20180807000001"
+        e = "20180807235959"
+        result = gettrackerdata_OWG(trackerid,s,e)
+        # Check if the request contained the right parameters
+        requests_mock.get.assert_called_once_with(url='https://ogn.fva.cloud/api/records/FLRDD989A?after=1533592801&before=1533679199')
+        self.assertEqual(result,"Soll_Ergebnis hier", "Pass")
 
 if __name__ == '__main__':
     unittest.main()

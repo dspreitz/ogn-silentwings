@@ -383,13 +383,19 @@ def gettrackerdata_OWG(trackerid,s,e):
     # Example url request to API
     # https://ogn.fva.cloud/api/records/OGN354B61?before=1532367209&after=1532367019
     
+    trackerid = "DD989A"
+    # TODO: Improve, as this is not universal yet.
     if trackerid.startswith('DD'):
         trackerid_mod = 'FLR' + trackerid
+    elif trackerid.startswith('3E'):
+        trackerid_mod = 'ICA' + trackerid
     else:
         print(trackerid)
         trackerid_mod = trackerid
     
-
+    # GET /gettrackerdata.php?querytype=getintfixes&contestname=QUALIFIKATIONSMEISTERSCHAFTZWICKAU%5f18M&trackerid=DF0E66&username=ogn&cpassword=ecbad38d0b5a3cf6482e661028b2c60c&starttime=20180807000001&endtime=20180807235959&compression=none HTTP/1.0
+    
+    
     urlstring = 'https://ogn.fva.cloud/api/records/' + str(trackerid_mod) + '?after=' + str(start_time) + '&before=' + str(end_time)
     # urlstring = 'https://ogn.fva.cloud/api/records/FLRDDBB1B?after=' + str(start_time) + '&before=' + str(end_time)
     # urlstring = 'https://ogn.fva.cloud/api/records/OGN354B61' # + '?before=1532725824' + '&after=1532643024'
@@ -397,6 +403,7 @@ def gettrackerdata_OWG(trackerid,s,e):
     r = requests.get(url = urlstring)
     # print(r.json())
     
+    # TODO tracker_id must be integer!
     for tracker_id in r.json():
         # print(r.json()[tracker_id])
         for fix in r.json()[tracker_id]:
